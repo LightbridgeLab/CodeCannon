@@ -1,0 +1,49 @@
+# .agents/config.yaml — Project-specific agent workflow configuration
+#
+# This file is read by AGENTS.md and any AI coding agent working on this project.
+# It defines the commands, branch strategy, and review settings that vary per project.
+# See AGENTS.md for the workflow that references these values.
+#
+# Customize the values below to match your project.
+
+workflow:
+  branches:
+    # The branch deployed to production.
+    production: main
+    # The branch used for staging/preview. PRs target this branch.
+    integration: development
+    # Prefix for feature branches (e.g. "feature/add-login").
+    feature_prefix: "feature/"
+
+  commands:
+    # Commands the agent runs at each workflow step.
+    # Use {name} as a placeholder for the feature branch name.
+    # If you use the included Makefile targets, these defaults work as-is.
+    create_branch: "make branch name={name}"
+    dev_server: "make dev"
+    build: "make build"
+    test: "make test"
+    lint: "make lint"
+    create_pr: "make pr"
+    merge_pr: "make merge"
+    abandon: "make abandon"
+
+  phases:
+    # Set to false to skip the discovery/proposal phase for trivial changes.
+    discovery: true
+    # Set to false to let agents act without waiting for human confirmation.
+    human_gates: true
+    # Set to false to skip the automated review agent step before merge.
+    review_agent: true
+
+  review:
+    # Path to the review agent prompt (relative to repo root).
+    prompt: ".agents/review-prompt.md"
+    # Review categories — the review agent checks these in priority order.
+    # Remove or add categories to match your project's needs.
+    categories:
+      - correctness
+      - security
+      # - platform_compliance  # Uncomment if you have platform-specific constraints
+      - conventions
+      - code_quality
