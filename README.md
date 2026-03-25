@@ -74,6 +74,22 @@ These aren't rigid modes — they're starting points. Every setting is independe
 
 **Milestone assignment is automatic.** When `/start` creates an issue it resolves the active milestone in order: per-invocation `--milestone` flag → `DEFAULT_MILESTONE` config → open milestones queried from GitHub. If one open milestone exists it's used silently; if multiple exist you're prompted once; if none exist the issue is created without one. Set `DEFAULT_MILESTONE` only if you want to pin a value and skip detection.
 
+## GitHub baseline for PM/BA setup
+
+If your repo is new and you want predictable behavior from `/start` and `/qa`, configure a minimal GitHub baseline before day-to-day usage:
+
+- **Starter labels for issue intake:** `bug`, `enhancement`, `chore`, `documentation`
+- **QA lifecycle labels:** `ready-for-qa`, `qa-passed`, `qa-failed`
+- **Optional planning labels:** a single priority scheme (for example `priority:high`, `priority:medium`, `priority:low`)
+
+How this maps to Code Cannon behavior:
+
+- `/start` uses `TICKET_LABELS` as its allowed label pool when creating issues.
+- `/qa` depends on `QA_READY_LABEL` to build the QA queue and applies `QA_PASSED_LABEL` or `QA_FAILED_LABEL` as verdicts.
+- Milestones can stay dynamic (auto-detected from GitHub open milestones) or be pinned using `DEFAULT_MILESTONE` when your team runs fixed iterations (for example `Sprint 12` or `Release 2026.04`).
+
+For first-time setup, run `/setup`; it can populate labels and walk through these options interactively.
+
 **Reviewer selection is never automatic.** `/ship` adds reviewers only from two sources: a detected `CODEOWNERS` file (checked in `CODEOWNERS`, `.github/CODEOWNERS`, and `docs/CODEOWNERS`) and the `DEFAULT_REVIEWERS` config key. The agent never infers reviewers from git history, blame, or team membership.
 
 **The agent commits; you test.** `/start` writes code but does not commit — it hands off to you with "run `DEV_CMD` and test locally." Committing happens in `/ship`. This is intentional: the human approval loop before shipping is where you catch things the agent missed.
