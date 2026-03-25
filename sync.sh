@@ -120,7 +120,7 @@ def read_file_info(file_path):
 
     Returns (stored_hash, body_hash, is_generated) where:
       stored_hash — hash recorded in the marker line when the file was last written
-      body_hash   — hash of the file's actual content (after the marker line)
+      body_hash   — hash of the file's actual content (excluding the marker line)
       is_generated — True if the file was written by this sync tool (current or legacy marker)
 
     Comparing stored_hash vs body_hash tells us whether the file was edited
@@ -132,17 +132,32 @@ def read_file_info(file_path):
         return None, None, False
 
     content = path.read_text()
-    parts = content.split('\n', 1)
-    first_line = parts[0]
+    lines = content.rstrip('\n').split('\n')
 
-    if not first_line_has_sync_marker(first_line):
+    # Marker can be on the last line (current) or the first line (legacy).
+    marker_line = None
+    marker_pos = None
+    if lines and first_line_has_sync_marker(lines[-1]):
+        marker_line = lines[-1]
+        marker_pos = 'end'
+    elif lines and first_line_has_sync_marker(lines[0]):
+        marker_line = lines[0]
+        marker_pos = 'start'
+
+    if marker_line is None:
         return None, None, False
 
-    match = re.search(r'hash: ([a-f0-9]+)', first_line)
+    match = re.search(r'hash: ([a-f0-9]+)', marker_line)
     stored_hash = match.group(1) if match else None
 
-    body = parts[1] if len(parts) > 1 else ''
-    body_hash = content_hash(body)
+    if marker_pos == 'end':
+        body = '\n'.join(lines[:-1]) + '\n'
+        body_hash = content_hash(body)
+    else:
+        # Legacy position (start) — marker needs to move to end.
+        # Return a None body_hash to guarantee it won't match the fresh hash,
+        # forcing regeneration even if the body content is identical.
+        body_hash = None
 
     return stored_hash, body_hash, True
 
@@ -213,8 +228,8 @@ def sync_skill(skill_path, adapter, project_config, project_root, args):
 
     # Compute hash (of content, before marker line)
     h = content_hash(full_content)
-    marker_line = f"<!-- {MARKER} | skill: {skill_name} | adapter: {adapter['name']} | hash: {h} | DO NOT EDIT — run CodeCanon/sync.sh to regenerate -->\n"
-    final_content = marker_line + full_content
+    marker_line = f"<!-- {MARKER} | skill: {skill_name} | adapter: {adapter['name']} | hash: {h} | DO NOT EDIT — run CodeCanon/sync.sh to regenerate -->"
+    final_content = full_content + marker_line + '\n'
 
     # Check existing file
     stored_hash, body_hash, is_generated = read_file_info(out_path)
@@ -222,7 +237,7 @@ def sync_skill(skill_path, adapter, project_config, project_root, args):
     skill_type = fm.get('type', 'skill')
     type_tag = f" [{skill_type}]" if skill_type != 'skill' else ''
 
-    # body_hash is computed over the file content after the marker line,
+    # body_hash is computed over the file content excluding the marker line,
     # which is exactly what we'd write as full_content. If they match, we're done.
     if body_hash == h:
         print(f"  ✓ {skill_name}{type_tag} (up to date)")
