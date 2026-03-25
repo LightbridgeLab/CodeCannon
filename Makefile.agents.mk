@@ -20,7 +20,6 @@
 #   Set STAGING_BRANCH to enable three-branch mode. When set:
 #     - `promote` target becomes available (PR: integration → staging)
 #     - STAGING_BRANCH is protected from direct feature work
-#     - `deploy-preview` pushes STAGING_BRANCH instead of INTEGRATION_BRANCH
 
 INTEGRATION_BRANCH ?= development
 PRODUCTION_BRANCH  ?= main
