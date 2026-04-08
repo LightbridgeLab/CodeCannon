@@ -1,7 +1,7 @@
 ---
 skill: submit-for-review
 type: skill
-description: Type-check, commit, open PR, review, and merge to the integration branch
+description: "Code Cannon: Type-check, commit, open PR, review, and merge to the integration branch"
 args: none
 ---
 
