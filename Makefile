@@ -39,6 +39,7 @@ check:
 
 # Preview what sync would generate without writing any files.
 dev:
+	./sync.sh --validate
 	./sync.sh --dry-run
 
 # Regenerate .claude/commands/ and other adapter output from skills/.
@@ -97,5 +98,6 @@ deploy-preview:
 # Publish a tagged release to production.
 deploy-prod:
 	git checkout $(PRODUCTION_BRANCH)
-	git pull --rebase origin $(PRODUCTION_BRANCH) --tags
+	git pull --rebase origin $(PRODUCTION_BRANCH)
+	git fetch origin --tags --force
 	git push origin $(PRODUCTION_BRANCH) --tags
