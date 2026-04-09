@@ -48,12 +48,16 @@ After parsing flags, determine the active labels in this order:
 2. **Pool-based selection** — no label pool is configured. Fall through to step 3.
 {{/if}}
 3. **No label / creation** — if the pool is empty or no pool label fits:
-   - If label creation is allowed (`{{TICKET_LABEL_CREATION_ALLOWED}}` = `true`, case-insensitive): the agent **may** create a new label before applying it:
+{{#if TICKET_LABEL_CREATION_ALLOWED}}
+   - Label creation is allowed in this project. The agent **may** create a new label before applying it:
      ```bash
      gh label create "<name>" --color "<hex>" --description "<short description>"
      ```
      Use judgment — only create a label with clear reuse value. Do not create near-duplicates of existing pool labels.
-   - Otherwise (`{{TICKET_LABEL_CREATION_ALLOWED}}` = `false` or unset): omit `--label` entirely. Proceed silently; do not inform the user.
+{{/if}}
+{{#if !TICKET_LABEL_CREATION_ALLOWED}}
+   - Label creation is not allowed in this project. Omit `--label` entirely. Proceed silently; do not inform the user.
+{{/if}}
 {{#if !TICKET_LABELS}}
 
 > **Tip:** Run `/setup` to populate TICKET_LABELS from your repo's existing GitHub labels.
@@ -295,7 +299,12 @@ When done, say: **"The code is ready for review. Please run `{{DEV_CMD}}` and te
 - `gh issue create` must use `--title` and `--body` flags. Never open an interactive editor.
 - The issue is assigned to `@me` at creation. If you are creating a ticket on someone else's behalf, remove the assignee after creation with `gh issue edit <number> --remove-assignee @me`.
 {{#if TICKET_LABELS}}
-- Apply resolved labels and milestone to every new issue. Label resolution order: per-invocation flag → pool selection from `{{TICKET_LABELS}}` → omit (or, when `{{TICKET_LABEL_CREATION_ALLOWED}}` = `true`, create). Never apply a label outside `{{TICKET_LABELS}}` unless `{{TICKET_LABEL_CREATION_ALLOWED}}` = `true`.
+{{#if TICKET_LABEL_CREATION_ALLOWED}}
+- Apply resolved labels and milestone to every new issue. Label resolution order: per-invocation flag → pool selection from `{{TICKET_LABELS}}` → create a new label when nothing in the pool fits. Labels outside `{{TICKET_LABELS}}` may only be created when no pool label is a good fit.
+{{/if}}
+{{#if !TICKET_LABEL_CREATION_ALLOWED}}
+- Apply resolved labels and milestone to every new issue. Label resolution order: per-invocation flag → pool selection from `{{TICKET_LABELS}}` → omit `--label` entirely. Never apply a label outside `{{TICKET_LABELS}}`.
+{{/if}}
 {{/if}}
 {{#if !TICKET_LABELS}}
 - Apply labels only when explicitly provided via `--label`. No label pool is configured.
