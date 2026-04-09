@@ -276,7 +276,7 @@ EOF
   [--label "<pool-selected labels>"]
 ```
 
-Label resolution for each follow-up issue: use the pool-based selection tier from `/start` — pick 1–3 labels from `{{TICKET_LABELS}}` that genuinely fit the finding. If `{{TICKET_LABELS}}` is empty or no pool label fits, omit `--label`. Do not attempt per-invocation flag resolution (there is no flag here) and do not create new labels regardless of `{{TICKET_LABEL_CREATION_ALLOWED}}`.
+Label resolution for each follow-up issue: use the pool-based selection tier from `/start` — pick 1–3 labels from `{{TICKET_LABELS}}` that genuinely fit the finding. If `{{TICKET_LABELS}}` is empty or no pool label fits, omit `--label`. Do not attempt per-invocation flag resolution (there is no flag here) and never create new labels from follow-ups, even if label creation is enabled for the project.
 
 Do **not** pass `--milestone` — follow-ups are future work and should not inherit the current sprint.
 

@@ -146,7 +146,11 @@ def apply_conditionals(text, values):
         m = _IF_OPEN.match(lines[open_idx])
         negated = m.group(1) == '!'
         key = m.group(2)
-        truthy = bool(values.get(key, '').strip())
+        raw_value = values.get(key, '').strip()
+        # Empty string and boolean-like falsy strings ('false', 'no', '0')
+        # are treated as falsy so config values like 'false' behave intuitively
+        # in conditional blocks.
+        truthy = bool(raw_value) and raw_value.lower() not in ('false', 'no', '0')
         keep = (not truthy) if negated else truthy
 
         if keep:
