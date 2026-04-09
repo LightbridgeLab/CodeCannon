@@ -289,6 +289,8 @@ Note the PR number from the output.
 
 The `Closes #N` lines will auto-close the linked issues because this PR merges into `{{BRANCH_PROD}}` (the default branch).
 
+> **Critical:** Use the unqualified `#N` form only. Never write `Closes owner/repo#N`, even for same-repo refs — GitHub's closing-keyword parser only populates `closingIssuesReferences` for the unqualified form, and the qualified form silently breaks auto-close.
+
 ---
 
 ## Step 7 — Merge
@@ -361,6 +363,8 @@ EOF
 Note the PR number from the output.
 
 The `Closes #N` lines will auto-close the linked issues because this PR merges into `{{BRANCH_PROD}}` (the default branch).
+
+> **Critical:** Use the unqualified `#N` form only. Never write `Closes owner/repo#N`, even for same-repo refs — GitHub's closing-keyword parser only populates `closingIssuesReferences` for the unqualified form, and the qualified form silently breaks auto-close.
 
 ---
 
