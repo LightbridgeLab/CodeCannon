@@ -228,6 +228,26 @@ If no linked issue was found, skip silently.
 {{/if}}
 {{/if}}
 
+**Post a resolution comment** on the linked issue (skip silently if no linked issue):
+
+Read the issue body (from Step 3 or via `gh issue view <number>`) to recall the original problem description. Then post a comment summarizing what was done:
+
+```
+gh issue comment <number> --body-file - <<'EOF'
+## Resolution
+
+<1-3 sentences explaining what was done to fix the problem, written in plain language for a non-technical audience — no code, no file paths, no jargon. Focus on what changed from the user's perspective and why it solves the problem described in the issue.>
+
+See #<PR-number> for full technical details.
+EOF
+```
+
+**Resolution writing rules:**
+- Write for PMs and BAs, not developers. Describe the *outcome*, not the implementation.
+- Reference the original problem from the issue body so the resolution reads as a direct answer to it.
+- Keep it to 1-3 sentences. If one sentence covers it, don't pad.
+- Use the unqualified `#N` form for the PR reference.
+
 Report success based on mode:
 {{#if !BRANCH_DEV}}
 "PR merged. Issue #N closed automatically. Run `{{DEPLOY_PROD_CMD}}` when ready to deploy to production."
