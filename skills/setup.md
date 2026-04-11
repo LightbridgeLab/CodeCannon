@@ -52,18 +52,7 @@ Explain the three-layer model:
 - **Config** (`.codecannon.yaml`) — a project's values that fill those tokens at sync time
 - **Sync** (`sync.sh`) — reads the config, substitutes values, and writes generated command files for each adapter (Claude Code → `.claude/commands/`, Cursor → `.cursor/rules/`)
 
-List the available skills:
-
-| Skill | What it does |
-|---|---|
-| `/start` | Creates a GitHub issue, feature branch, and writes code |
-| `/submit-for-review` | Checks, commits, opens PR, spawns review agent, merges |
-| `/review` | Standalone code review on any PR |
-| `/deploy` | Bumps version, creates GitHub Release, promotes to production |
-| `/status` | Snapshot of open PRs and issues for the team |
-| `/setup` | This skill — configures Code Cannon in a project |
-
-Point to README.md for full documentation. Do not touch any file.
+Point to README.md for the full skill list and documentation. Do not touch any file.
 
 **Path B — "I want to add Code Cannon to my project"**
 
@@ -170,30 +159,21 @@ Wait for response. If the user describes their situation instead of picking a nu
 
 **Apply profile values to `.codecannon.yaml`:**
 
-After the user selects a profile, ask follow-up questions and write values. Show every change before writing and ask "Apply these values to `.codecannon.yaml`? (yes/no)". Write only on yes.
+After the user selects a profile, ask the applicable follow-up questions from this list:
+- "What's your production branch name?" (default: `main`) — ask for all profiles except Custom
+- "What's your integration branch name?" (default: `development`) — ask for Standard and Governed only
+- "Do you need a separate test/staging branch?" (default: `staging`) — ask for Governed only; if yes, ask for the branch name
 
-**Lightweight:**
-- "What's your production branch name?" (default: `main`)
-- Write: `BRANCH_PROD: <answer>`, `REVIEW_GATE: "advisory"`. Leave `BRANCH_DEV`, `BRANCH_TEST`, `DEFAULT_REVIEWERS`, `TICKET_LABELS`, and all QA labels commented out.
-- No further questions. Say: "Lightweight profile applied. Check the workflow commands (`CHECK_CMD`, deploy commands, etc.) and run `/setup` again to finish configuration." Stop.
+Show every change before writing and ask "Apply these values to `.codecannon.yaml`? (yes/no)". Write only on yes.
 
-**Standard:**
-- "What's your production branch name?" (default: `main`)
-- "What's your integration branch name?" (default: `development`)
-- Write: `BRANCH_PROD: <answer>`, `BRANCH_DEV: <answer>`, `REVIEW_GATE: "ai"`. Leave `BRANCH_TEST` and QA labels commented out.
-- Say: "Standard profile applied. Check the workflow commands and run `/setup` again to finish configuration." Stop.
+| Profile | Values to write | Values left commented out |
+|---|---|---|
+| **Lightweight** | `BRANCH_PROD`, `REVIEW_GATE: "advisory"` | `BRANCH_DEV`, `BRANCH_TEST`, `DEFAULT_REVIEWERS`, `TICKET_LABELS`, all QA labels |
+| **Standard** | `BRANCH_PROD`, `BRANCH_DEV`, `REVIEW_GATE: "ai"` | `BRANCH_TEST`, QA labels |
+| **Governed** | `BRANCH_PROD`, `BRANCH_DEV`, `REVIEW_GATE: "ai"`, `QA_READY_LABEL: "ready-for-qa"`, `QA_PASSED_LABEL: "qa-passed"`, `QA_FAILED_LABEL: "qa-failed"`, and `BRANCH_TEST` if applicable | — |
+| **Custom** | Nothing — tell the user to review the file manually | — |
 
-**Governed:**
-- "What's your production branch name?" (default: `main`)
-- "What's your integration branch name?" (default: `development`)
-- "Do you need a separate test/staging branch between integration and production? (yes/no)"
-  - If yes: "What's the test/staging branch name?" (default: `staging`)
-  - Write `BRANCH_TEST: <answer>`.
-- Write: `BRANCH_PROD: <answer>`, `BRANCH_DEV: <answer>`, `REVIEW_GATE: "ai"`, `QA_READY_LABEL: "ready-for-qa"`, `QA_PASSED_LABEL: "qa-passed"`, `QA_FAILED_LABEL: "qa-failed"`.
-- Say: "Governed profile applied. Check the workflow commands and run `/setup` again to finish configuration." Stop.
-
-**Custom:**
-- Say: "Open `.codecannon.yaml` and check the values marked with comments — especially `BRANCH_PROD`, `BRANCH_DEV`, `REVIEW_GATE`, `CHECK_CMD`, and the deploy commands. Then run `/setup` again." Stop.
+After writing, say: "<Profile> profile applied. Check the workflow commands and run `/setup` again to finish configuration." Stop.
 
 ### Check 6 — .codecannon.yaml stale values
 
@@ -306,7 +286,9 @@ Wait for response.
 - **yes** → create missing labels only (do not recreate existing labels). Use sensible colors and short descriptions.
 - **no / skip / anything else** → continue without creating labels.
 
-After this step (or if labels were non-zero initially), run `gh label list --limit 100 --json name,color,description` again and continue with the numbered list flow below.
+After this step (or if labels were non-zero initially), run `gh label list --limit 100 --json name,color,description` again.
+
+If `TICKET_LABELS` is unset or fewer than 5 labels exist, add a note: "`/start` works best with a clear issue-label pool (`TICKET_LABELS`), and `/qa` needs explicit QA lifecycle labels (`ready-for-qa`, `qa-passed`, `qa-failed`). If the team runs planned iterations, set `DEFAULT_MILESTONE` in Phase 3; otherwise leave it unset so `/start` auto-detects."
 
 Display the results as a numbered list:
 
@@ -344,107 +326,21 @@ Wait for confirmation. Write only on yes.
 
 First, infer the current profile using the same rules as Phase 1.
 
-The walkthrough adapts based on profile. Walk through each applicable unset optional config value in the order shown below. Skip any value that is already set. For each unset value, explain what it does in one sentence, show an example, and ask if they want to set it. If the user says "skip" or provides nothing useful, move on immediately without modifying the file. Do not ask again.
+The walkthrough adapts based on profile. Walk through each applicable unset value in the order shown. Skip any value already set. If the user says "skip", move on without modifying the file and do not ask again.
 
-**Which values to walk through per profile:**
+**Common pattern for simple values** (DEFAULT_MILESTONE, DEFAULT_REVIEWERS, TICKET_LABEL_CREATION_ALLOWED): explain in one sentence, show the example value, ask. If the user provides a value, show the exact YAML change and ask "Write this to `.codecannon.yaml`? (yes/no)". Write only on yes.
 
-- **Lightweight:** `PLATFORM_COMPLIANCE_NOTES` → `CONVENTIONS_NOTES` only. Skip DEFAULT_MILESTONE, DEFAULT_REVIEWERS, TICKET_LABEL_CREATION_ALLOWED, and QA labels — the Lightweight profile intentionally leaves these unset.
-- **Standard:** `DEFAULT_REVIEWERS` → `TICKET_LABEL_CREATION_ALLOWED` → `PLATFORM_COMPLIANCE_NOTES` → `CONVENTIONS_NOTES`. Skip DEFAULT_MILESTONE and QA labels unless the user asks about them.
-- **Governed:** All values: `DEFAULT_MILESTONE` → `DEFAULT_REVIEWERS` → `TICKET_LABEL_CREATION_ALLOWED` → `PLATFORM_COMPLIANCE_NOTES` → `CONVENTIONS_NOTES`.
-- **Custom:** Same as Governed (walk through everything).
+**Common pattern for drafted values** (PLATFORM_COMPLIANCE_NOTES, CONVENTIONS_NOTES): ask what technologies/conventions apply, draft 2–4 concise checkable rules, show the draft, iterate until the user approves or skips. On approval, show the exact YAML change, confirm, write only on yes.
 
----
+| Key | Profiles | Description | Example / Prompt |
+|---|---|---|---|
+| `DEFAULT_MILESTONE` | Governed, Custom | Default milestone for `/start` issues | `"Sprint 4"` — "Which milestone, if any?" |
+| `DEFAULT_REVIEWERS` | Standard, Governed, Custom | PR reviewers for `/submit-for-review` | `"@alice,@bob"` — "Who should review PRs?" |
+| `TICKET_LABEL_CREATION_ALLOWED` | Standard, Governed, Custom | Allow `/start` to create new labels on the fly | `"true"` — "Allow label creation? (true/false)" |
+| `PLATFORM_COMPLIANCE_NOTES` | All | Platform-specific rules for the review agent | "What backend/infra? (Postgres, Next.js, etc.)" |
+| `CONVENTIONS_NOTES` | All | Non-obvious team conventions for the review agent | "What conventions should a reviewer catch?" |
 
-### Greenfield GitHub baseline guidance (for PM/BA setup)
-
-Before the value walkthrough, provide this mini guide when either condition is true:
-- `TICKET_LABELS` is unset, or
-- fewer than 5 labels exist in the repository.
-
-Keep it short and practical:
-
-1. Explain that `/start` works best with a clear issue-label pool (`TICKET_LABELS`) and `/qa` needs explicit QA lifecycle labels.
-2. Recommend this baseline label set for new projects:
-   - Work intake: `bug`, `enhancement`, `chore`, `documentation`
-   - QA lifecycle: `ready-for-qa`, `qa-passed`, `qa-failed`
-   - Optional planning: one lightweight priority scheme (for example `priority:high`, `priority:medium`, `priority:low`)
-3. Explain milestone guidance:
-   - If the team runs planned iterations, set `DEFAULT_MILESTONE` (example: `Sprint 12` or `Release 2026.04`).
-   - If not, leave it unset so `/start` auto-detects open milestones and prompts only when needed.
-4. End with: "Want me to help apply this baseline now during setup? (yes/no)"
-
-If user says no, continue immediately with the normal walkthrough.
-
----
-
-**DEFAULT_MILESTONE** (Governed and Custom only)
-
-"Sets the default milestone applied to every issue `/start` creates — skip if you're not using milestones or prefer auto-detect."
-
-Example: `DEFAULT_MILESTONE: "Sprint 4"`
-
-Ask: "Which milestone should new issues go under, if any? (name, number, or 'skip')"
-
-**DEFAULT_REVIEWERS** (Standard, Governed, and Custom)
-
-"Comma-separated GitHub handles or team slugs that `/submit-for-review` adds as PR reviewers — leave unset to rely on CODEOWNERS or manual assignment."
-
-Example: `DEFAULT_REVIEWERS: "@alice,@bob"`
-
-Ask: "Who should be auto-assigned as PR reviewers? (handles, team slugs, or 'skip')"
-
-**TICKET_LABEL_CREATION_ALLOWED** (Standard, Governed, and Custom)
-
-"Controls whether `/start` can create new GitHub labels on the fly when none in the pool fit the task. Defaults to false."
-
-Example: `TICKET_LABEL_CREATION_ALLOWED: "true"`
-
-Ask: "Allow `/start` to create new labels when none fit? (true / false / skip)"
-
-**PLATFORM_COMPLIANCE_NOTES** (all profiles)
-
-"Platform-specific rules injected into the review agent — this is how the review agent catches issues specific to your infrastructure. Skip if you're not sure yet."
-
-Ask: "What backend or infrastructure does this project use? (e.g. Postgres, Redis, Next.js, a specific ORM or framework — or 'skip')"
-
-Wait for response. If skip → move on.
-
-Based on their answer, draft 2–4 compliance rules that are commonly violated for those technologies and checkable by a review agent. Show the draft:
-
-```
-Here's a draft for PLATFORM_COMPLIANCE_NOTES:
-
-  PLATFORM_COMPLIANCE_NOTES: |
-    - <rule 1>
-    - <rule 2>
-    - <rule 3>
-
-Does this look right? Edit, add more, or say 'looks good'.
-```
-
-Iterate until the user approves or says skip. On approval, show the exact yaml change and ask "Write this to `.codecannon.yaml`? (yes/no)". Write only on yes. Confirm with one line after writing.
-
-**CONVENTIONS_NOTES** (all profiles)
-
-"Non-obvious team conventions injected into the review agent — rules that differ from common defaults and that you'd want a reviewer to flag. Skip if you're not sure yet."
-
-Ask: "What are the most commonly violated or non-obvious code conventions on this project that you'd want a reviewer to catch? (or 'skip')"
-
-Wait for response. If skip → move on.
-
-Shape their answer into concise, checkable rules. Show the draft:
-
-```
-Here's a draft for CONVENTIONS_NOTES:
-
-  CONVENTIONS_NOTES: |
-    - <rule 1>
-    - <rule 2>
-
-Does this look right? Edit, add more, or say 'looks good'.
-```
-
-Iterate until the user approves or says skip. On approval, show the exact yaml change and ask "Write this to `.codecannon.yaml`? (yes/no)". Write only on yes. Confirm with one line after writing.
+**Lightweight** skips DEFAULT_MILESTONE, DEFAULT_REVIEWERS, and TICKET_LABEL_CREATION_ALLOWED — those are intentionally unset.
 
 ---
 
