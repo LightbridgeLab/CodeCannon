@@ -239,17 +239,23 @@ Wait for the user to type "release" or an explicit confirmation. Any other respo
 
 The version tag and PR/issue list are already known. If no previous tag exists, omit the "Full changelog" line.
 
-```bash
-gh release create <version-tag> \
-  --title "<version-tag>" \
-  --notes-file - <<'EOF'
+Use your file-writing tool (not Bash) to create `/tmp/cc_release_notes.md`:
+
+```markdown
 ## Changes
 
 - #<issue> — <PR title> (PR #<pr-number>)
 [... one line per PR included in this release ...]
 
 **Full changelog:** https://github.com/<owner>/<repo>/compare/<previous-tag>...<version-tag>
-EOF
+```
+
+Then create the release (do NOT use `--notes`, `--notes-file -`, or heredocs):
+
+```bash
+gh release create <version-tag> \
+  --title "<version-tag>" \
+  --notes-file /tmp/cc_release_notes.md
 ```
 
 Format each PR line as `- #<linked-issue> — <PR title> (PR #<N>)`. If a PR had no linked issue, use just the PR title.
@@ -268,10 +274,9 @@ Tell the user:
 {{#if !BRANCH_TEST}}
 ## Step 6 — Create PR: `{{BRANCH_DEV}}` → `{{BRANCH_PROD}}`
 
-```bash
-gh pr create --base {{BRANCH_PROD}} --head {{BRANCH_DEV}} \
-  --title "Release vX.Y.Z" \
-  --body-file - <<'EOF'
+Use your file-writing tool (not Bash) to create `/tmp/cc_release_pr_body.md`:
+
+```markdown
 Release vX.Y.Z
 
 PRs included:
@@ -280,7 +285,14 @@ PRs included:
 
 Closes #14
 Closes #15
-EOF
+```
+
+Then create the PR (do NOT use `--body`, `--body-file -`, or heredocs):
+
+```bash
+gh pr create --base {{BRANCH_PROD}} --head {{BRANCH_DEV}} \
+  --title "Release vX.Y.Z" \
+  --body-file /tmp/cc_release_pr_body.md
 ```
 
 Note the PR number from the output.
@@ -311,19 +323,23 @@ git describe --abbrev=0 <version-tag>^ 2>/dev/null
 
 If no previous tag exists, omit the "Full changelog" line.
 
-Create the release:
+Use your file-writing tool (not Bash) to create `/tmp/cc_release_notes.md`:
 
-```bash
-gh release create <version-tag> \
-  --title "<version-tag>" \
-  --notes-file - <<'EOF'
+```markdown
 ## Changes
 
 - #<issue> — <PR title> (PR #<pr-number>)
 [... one line per PR included in this release ...]
 
 **Full changelog:** https://github.com/<owner>/<repo>/compare/<previous-tag>...<version-tag>
-EOF
+```
+
+Then create the release (do NOT use `--notes`, `--notes-file -`, or heredocs):
+
+```bash
+gh release create <version-tag> \
+  --title "<version-tag>" \
+  --notes-file /tmp/cc_release_notes.md
 ```
 
 Format each PR line as `- #<linked-issue> — <PR title> (PR #<N>)`. If a PR had no linked issue, omit the `#<issue>` prefix and use just the PR title.
@@ -341,10 +357,9 @@ Tell the user:
 {{#if BRANCH_TEST}}
 ## Step 6 — Create PR: `{{BRANCH_TEST}}` → `{{BRANCH_PROD}}`
 
-```bash
-gh pr create --base {{BRANCH_PROD}} --head {{BRANCH_TEST}} \
-  --title "Release vX.Y.Z" \
-  --body-file - <<'EOF'
+Use your file-writing tool (not Bash) to create `/tmp/cc_release_pr_body.md`:
+
+```markdown
 Release vX.Y.Z
 
 PRs included:
@@ -353,7 +368,14 @@ PRs included:
 
 Closes #14
 Closes #15
-EOF
+```
+
+Then create the PR (do NOT use `--body`, `--body-file -`, or heredocs):
+
+```bash
+gh pr create --base {{BRANCH_PROD}} --head {{BRANCH_TEST}} \
+  --title "Release vX.Y.Z" \
+  --body-file /tmp/cc_release_pr_body.md
 ```
 
 Note the PR number from the output.
@@ -384,19 +406,23 @@ git describe --abbrev=0 <version-tag>^ 2>/dev/null
 
 If no previous tag exists, omit the "Full changelog" line.
 
-Create the release:
+Use your file-writing tool (not Bash) to create `/tmp/cc_release_notes.md`:
 
-```bash
-gh release create <version-tag> \
-  --title "<version-tag>" \
-  --notes-file - <<'EOF'
+```markdown
 ## Changes
 
 - #<issue> — <PR title> (PR #<pr-number>)
 [... one line per PR included in this release ...]
 
 **Full changelog:** https://github.com/<owner>/<repo>/compare/<previous-tag>...<version-tag>
-EOF
+```
+
+Then create the release (do NOT use `--notes`, `--notes-file -`, or heredocs):
+
+```bash
+gh release create <version-tag> \
+  --title "<version-tag>" \
+  --notes-file /tmp/cc_release_notes.md
 ```
 
 Format each PR line as `- #<linked-issue> — <PR title> (PR #<N>)`. If a PR had no linked issue, omit the `#<issue>` prefix and use just the PR title.
