@@ -239,7 +239,15 @@ Wait for the user to type "release" or an explicit confirmation. Any other respo
 
 The version tag and PR/issue list are already known. If no previous tag exists, omit the "Full changelog" line.
 
-Use your file-writing tool (not Bash) to create `/tmp/cc_release_notes.md`:
+First, create a temp directory for this invocation:
+
+```bash
+mkdir -p /tmp/CodeCannon && mktemp -d /tmp/CodeCannon/XXXXXX
+```
+
+Note the returned path (e.g. `/tmp/CodeCannon/a8f3b2`). Use this path for all temp files in this invocation.
+
+Then use your file-writing tool (not Bash) to create `<tmpdir>/release_notes.md`:
 
 ```markdown
 ## Changes
@@ -255,7 +263,7 @@ Then create the release (do NOT use `--notes`, `--notes-file -`, or heredocs):
 ```bash
 gh release create <version-tag> \
   --title "<version-tag>" \
-  --notes-file /tmp/cc_release_notes.md
+  --notes-file <tmpdir>/release_notes.md
 ```
 
 Format each PR line as `- #<linked-issue> — <PR title> (PR #<N>)`. If a PR had no linked issue, use just the PR title.
@@ -274,7 +282,15 @@ Tell the user:
 {{#if !BRANCH_TEST}}
 ## Step 6 — Create PR: `{{BRANCH_DEV}}` → `{{BRANCH_PROD}}`
 
-Use your file-writing tool (not Bash) to create `/tmp/cc_release_pr_body.md`:
+First, create a temp directory for this invocation:
+
+```bash
+mkdir -p /tmp/CodeCannon && mktemp -d /tmp/CodeCannon/XXXXXX
+```
+
+Note the returned path (e.g. `/tmp/CodeCannon/a8f3b2`). Use this path for all temp files in this invocation.
+
+Then use your file-writing tool (not Bash) to create `<tmpdir>/release_pr_body.md`:
 
 ```markdown
 Release vX.Y.Z
@@ -292,7 +308,7 @@ Then create the PR (do NOT use `--body`, `--body-file -`, or heredocs):
 ```bash
 gh pr create --base {{BRANCH_PROD}} --head {{BRANCH_DEV}} \
   --title "Release vX.Y.Z" \
-  --body-file /tmp/cc_release_pr_body.md
+  --body-file <tmpdir>/release_pr_body.md
 ```
 
 Note the PR number from the output.
@@ -323,7 +339,7 @@ git describe --abbrev=0 <version-tag>^ 2>/dev/null
 
 If no previous tag exists, omit the "Full changelog" line.
 
-Use your file-writing tool (not Bash) to create `/tmp/cc_release_notes.md`:
+Use your file-writing tool (not Bash) to create `<tmpdir>/release_notes.md` (same temp directory from Step 6):
 
 ```markdown
 ## Changes
@@ -339,7 +355,7 @@ Then create the release (do NOT use `--notes`, `--notes-file -`, or heredocs):
 ```bash
 gh release create <version-tag> \
   --title "<version-tag>" \
-  --notes-file /tmp/cc_release_notes.md
+  --notes-file <tmpdir>/release_notes.md
 ```
 
 Format each PR line as `- #<linked-issue> — <PR title> (PR #<N>)`. If a PR had no linked issue, omit the `#<issue>` prefix and use just the PR title.
@@ -357,7 +373,15 @@ Tell the user:
 {{#if BRANCH_TEST}}
 ## Step 6 — Create PR: `{{BRANCH_TEST}}` → `{{BRANCH_PROD}}`
 
-Use your file-writing tool (not Bash) to create `/tmp/cc_release_pr_body.md`:
+First, create a temp directory for this invocation:
+
+```bash
+mkdir -p /tmp/CodeCannon && mktemp -d /tmp/CodeCannon/XXXXXX
+```
+
+Note the returned path (e.g. `/tmp/CodeCannon/a8f3b2`). Use this path for all temp files in this invocation.
+
+Then use your file-writing tool (not Bash) to create `<tmpdir>/release_pr_body.md`:
 
 ```markdown
 Release vX.Y.Z
@@ -375,7 +399,7 @@ Then create the PR (do NOT use `--body`, `--body-file -`, or heredocs):
 ```bash
 gh pr create --base {{BRANCH_PROD}} --head {{BRANCH_TEST}} \
   --title "Release vX.Y.Z" \
-  --body-file /tmp/cc_release_pr_body.md
+  --body-file <tmpdir>/release_pr_body.md
 ```
 
 Note the PR number from the output.
@@ -406,7 +430,7 @@ git describe --abbrev=0 <version-tag>^ 2>/dev/null
 
 If no previous tag exists, omit the "Full changelog" line.
 
-Use your file-writing tool (not Bash) to create `/tmp/cc_release_notes.md`:
+Use your file-writing tool (not Bash) to create `<tmpdir>/release_notes.md` (same temp directory from Step 6):
 
 ```markdown
 ## Changes
@@ -422,7 +446,7 @@ Then create the release (do NOT use `--notes`, `--notes-file -`, or heredocs):
 ```bash
 gh release create <version-tag> \
   --title "<version-tag>" \
-  --notes-file /tmp/cc_release_notes.md
+  --notes-file <tmpdir>/release_notes.md
 ```
 
 Format each PR line as `- #<linked-issue> — <PR title> (PR #<N>)`. If a PR had no linked issue, omit the `#<issue>` prefix and use just the PR title.

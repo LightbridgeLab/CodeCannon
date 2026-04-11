@@ -111,6 +111,35 @@ After parsing flags, determine the active milestone in this order:
 
 ---
 
+## Pre-check: Existing feature branch
+
+Before entering Case A or Case B, check the current branch:
+
+```bash
+git branch --show-current
+```
+
+If already on a `feature/*` branch and `$ARGUMENTS` is **not** a number (i.e. this is new work, not a resume):
+
+Say:
+
+> **"You're already on `feature/<name>`. Would you like to create a GitHub issue linked to this branch and start coding? Or switch to the base branch first? (yes to continue here / no to abort)"**
+
+Stop. Wait for the user to respond.
+
+- **Yes** → proceed to **Case A**, but **skip Step 4** (branch creation) entirely. The current branch is used as-is. In Step 3, after creating the issue, link it to the existing branch by running:
+  ```bash
+  gh issue develop <number> --base <base-branch> --name <current-branch-name>
+  ```
+  This links the issue to the branch in GitHub without creating or checking out a new branch. If `gh issue develop` fails because the branch already exists on the remote, that is fine — the link may already be established. Continue to Step 5.
+- **No / abort** → stop. Tell the user to switch to the base branch and run `/start` again.
+
+If already on a `feature/*` branch and `$ARGUMENTS` **is** a number → proceed to **Case B** normally (it handles branch checkout itself).
+
+If on any other branch → proceed to Case A or Case B as determined by the `$ARGUMENTS` check above.
+
+---
+
 ## Case A: New work (text description)
 
 ### Step 1 — Investigate
@@ -138,7 +167,15 @@ The friendly text question is required regardless of harness mode. If your harne
 
 Create the issue in two steps — **this exact sequence is mandatory**:
 
-**Step 3a — Write the body to a temp file.** Use your file-writing tool (Write in Claude Code, equivalent in other agents) to create `/tmp/cc_issue_body.md` with the structured markdown body (see sections below). Do NOT use Bash/shell to write this file. Do NOT use heredocs, `cat`, or `echo`. The file-writing tool bypasses shell parsing entirely.
+**Step 3a — Create a temp directory and write the body file.** Run:
+
+```bash
+mkdir -p /tmp/CodeCannon && mktemp -d /tmp/CodeCannon/XXXXXX
+```
+
+Note the returned path (e.g. `/tmp/CodeCannon/a8f3b2`). Use this path for all temp files in this invocation.
+
+Then use your file-writing tool (Write in Claude Code, equivalent in other agents) to create `<tmpdir>/issue_body.md` with the structured markdown body (see sections below). Do NOT use Bash/shell to write this file. Do NOT use heredocs, `cat`, or `echo`. The file-writing tool bypasses shell parsing entirely.
 
 **Step 3b — Run `gh issue create`** with `--body-file` pointing to the temp file:
 
@@ -148,7 +185,7 @@ gh issue create \
   --assignee @me \
   [--label "<resolved labels>"] \
   [--milestone "<resolved milestone>"] \
-  --body-file /tmp/cc_issue_body.md
+  --body-file <tmpdir>/issue_body.md
 ```
 
 > **IMPORTANT — never pass body content inline in the `gh` command.** Do not use `--body`, `--body-file -`, heredocs (`<<EOF` or `<<'EOF'`), or `$(cat ...)`. All of these embed markdown in a Bash command, which triggers permission prompts that cannot be permanently allowed (the shell parser flags `#` headings, quoted delimiters, and substitutions). The two-step pattern above — file-writing tool then `--body-file <path>` — is the only approach that works without prompts across Claude Code, Gemini CLI, Cursor, and Codex.
@@ -196,7 +233,7 @@ Show the user: `Created issue #<number>: <title>`
 
 Then immediately post agent implementation notes as a comment.
 
-Use your file-writing tool (not Bash) to create `/tmp/cc_issue_comment.md`:
+Use your file-writing tool (not Bash) to create `<tmpdir>/issue_comment.md` (same temp directory from Step 3a):
 ```markdown
 ## Agent Implementation Notes
 
@@ -205,7 +242,7 @@ Use your file-writing tool (not Bash) to create `/tmp/cc_issue_comment.md`:
 
 Then post it (do NOT use `--body` or heredocs — same rule as Step 3):
 ```bash
-gh issue comment <number> --body-file /tmp/cc_issue_comment.md
+gh issue comment <number> --body-file <tmpdir>/issue_comment.md
 ```
 
 ### Step 4 — Create feature branch
@@ -346,7 +383,7 @@ When done, say: **"The code is ready for review. Please run `{{DEV_CMD}}` and te
 - Do not write or edit any source file before `git branch --show-current` shows `feature/*`.
 - Do not use `make branch` — always use `gh issue develop` so the branch is linked to the issue in GitHub.
 - Do not commit during `/start` — commits happen in `/submit-for-review`.
-- If already on a feature branch when `/start` is invoked, warn the user before creating another branch.
+- If already on a feature branch when `/start` is invoked with new work (Case A), prompt the user to either continue on the current branch (skipping branch creation) or abort. See **Pre-check: Existing feature branch** above.
 - `gh issue create` must use `--title` and `--body` flags. Never open an interactive editor.
 - The issue is assigned to `@me` at creation. If you are creating a ticket on someone else's behalf, remove the assignee after creation with `gh issue edit <number> --remove-assignee @me`.
 {{#if TICKET_LABELS}}
