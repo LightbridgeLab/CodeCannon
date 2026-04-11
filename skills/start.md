@@ -136,13 +136,11 @@ The friendly text question is required regardless of harness mode. If your harne
 
 ### Step 3 — Create GitHub Issue
 
-Run `gh issue create` with explicit flags (do NOT open an interactive editor).
+Create the issue in two steps — **this exact sequence is mandatory**:
 
-First, write the issue body to a temp file using the **Write tool** (not Bash):
+**Step 3a — Write the body to a temp file.** Use your file-writing tool (Write in Claude Code, equivalent in other agents) to create `/tmp/cc_issue_body.md` with the structured markdown body (see sections below). Do NOT use Bash/shell to write this file. Do NOT use heredocs, `cat`, or `echo`. The file-writing tool bypasses shell parsing entirely.
 
-**Write** `/tmp/cc_issue_body.md` with the structured markdown body (see sections below).
-
-Then create the issue:
+**Step 3b — Run `gh issue create`** with `--body-file` pointing to the temp file:
 
 ```bash
 gh issue create \
@@ -153,7 +151,7 @@ gh issue create \
   --body-file /tmp/cc_issue_body.md
 ```
 
-> **Why Write tool + `--body-file`?** Passing multi-line markdown content inline in a Bash command — whether via `$(...)`, quoted heredocs (`<<'EOF'`), or unquoted heredocs (`<<EOF` with `#` headings) — triggers Claude Code permission prompts that cannot be permanently allowed. Writing the body with the Write tool bypasses shell parsing entirely, and the resulting `gh` command is a clean prefix match for `Bash(gh:*)`. This pattern works identically across Claude Code, Gemini CLI, Cursor, and Codex.
+> **IMPORTANT — never pass body content inline in the `gh` command.** Do not use `--body`, `--body-file -`, heredocs (`<<EOF` or `<<'EOF'`), or `$(cat ...)`. All of these embed markdown in a Bash command, which triggers permission prompts that cannot be permanently allowed (the shell parser flags `#` headings, quoted delimiters, and substitutions). The two-step pattern above — file-writing tool then `--body-file <path>` — is the only approach that works without prompts across Claude Code, Gemini CLI, Cursor, and Codex.
 
 Resolve labels and milestone using the resolution steps in the Parsing section above:
 - **Labels**: use the value from three-tier label resolution. If non-empty, add `--label "<value>"` to the command. If empty (no flag, empty pool, creation not allowed), omit `--label` entirely.
@@ -198,14 +196,14 @@ Show the user: `Created issue #<number>: <title>`
 
 Then immediately post agent implementation notes as a comment.
 
-**Write** `/tmp/cc_issue_comment.md`:
+Use your file-writing tool (not Bash) to create `/tmp/cc_issue_comment.md`:
 ```markdown
 ## Agent Implementation Notes
 
 <full technical plan: exact files to change, approach, key decisions, edge cases>
 ```
 
-Then post it:
+Then post it (do NOT use `--body` or heredocs — same rule as Step 3):
 ```bash
 gh issue comment <number> --body-file /tmp/cc_issue_comment.md
 ```
