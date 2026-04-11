@@ -39,5 +39,6 @@ config:
   QA_READY_LABEL: "ready-for-qa"
   QA_PASSED_LABEL: "qa-passed"
   QA_FAILED_LABEL: "qa-failed"
+  STALE_DAYS: "14"
   PLATFORM_COMPLIANCE_NOTES: "<!-- No platform-specific compliance rules defined. Edit .codecannon.yaml to add them. -->"
   CONVENTIONS_NOTES: "<!-- No project conventions defined. Edit .codecannon.yaml to add them. -->"

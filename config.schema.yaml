@@ -179,6 +179,17 @@ placeholders:
   # behave differently across GitHub tiers and org settings. Project board placement is explicitly
   # out of scope for /start and remains a manual step or future extension.
 
+  # ── Status skill ───────────────────────────────────────────────────────────
+
+  STALE_DAYS:
+    description: >
+      Number of days after which an open PR or issue is flagged as stale in /status output.
+      Items whose updatedAt is older than this threshold get a ⚠️ stale badge and appear in a
+      consolidated "Stale" section. Set to 0 to disable stale detection entirely.
+    default: "14"
+    category: status
+    used_in: [status]
+
   # ── Review agent content ───────────────────────────────────────────────────
 
   PLATFORM_COMPLIANCE_NOTES:
