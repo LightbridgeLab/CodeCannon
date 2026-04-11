@@ -204,7 +204,24 @@ Apply QA label and report success (see below).
 
 **If `{{REVIEW_GATE}}` is `"ai"` (default):**
 
-**If APPROVE (no CRITICAL findings):** Run the merge command. Apply QA label and report success (see below).
+**If APPROVE (no CRITICAL findings):**
+
+Collect any non-blocking findings (`[WARNING]` or `[NOTE]` lines) from the review output.
+
+- **If there are no non-blocking findings** (clean review): Run the merge command immediately. Apply QA label and report success (see below).
+
+- **If there are non-blocking findings**: Present the findings as a numbered list (preserve the `[WARNING]` / `[NOTE]` prefix) and say:
+
+  > "The review approved with N non-blocking finding(s):
+  >
+  > <numbered list of findings>
+  >
+  > Would you like to **address these first** before merging, or **merge now**?"
+
+  Wait for the user to respond.
+
+  - User says **address / fix** → return to the coding loop. Say: "Fix the findings and run `/submit-for-review` again when ready." Do NOT merge.
+  - User says **merge now** → run the merge command. Apply QA label and report success (see below). Proceed to Step 9 as normal (which will offer to create follow-up issues for any remaining findings).
 
 **If REQUEST CHANGES (at least one CRITICAL finding):** Report the findings to the user. Do NOT merge. Say:
 
