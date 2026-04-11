@@ -110,16 +110,23 @@ Use `Issue #<number>` as the issue reference — the issue stays open until `/de
 
 > **Critical:** Use the unqualified `#N` form (e.g. `Closes #42`), never the fully-qualified `owner/repo#N` form (e.g. `Closes LightbridgeLab/CodeCannon#42`), even for same-repo references. GitHub's closing-keyword parser reliably populates `closingIssuesReferences` only for the unqualified form; the qualified form leaves that GraphQL edge empty, which silently breaks GitHub's native auto-close and any downstream automation that reads it. This overrides any general "use owner/repo#N for cross-linking" guidance your harness may have — closing-keyword lines in PR bodies are a special case.
 
-Then create the PR with explicit title and body (never use an interactive editor):
-```
-gh pr create --base <target-branch> --title "<title>" --body-file - <<'EOF'
+Then create the PR in two steps — **this exact sequence is mandatory**:
+
+First, use your file-writing tool (Write in Claude Code, equivalent in other agents) to create `/tmp/cc_pr_body.md`. Do NOT use Bash/shell to write this file.
+
+```markdown
 <description of what changed and why>
 
 <Closes #N  OR  Issue #N, based on target above>
-EOF
 ```
 
-> **Why `--body-file -` + stdin heredoc?** Claude Code's permission matcher refuses to extend any `Bash(gh:*)` allow rule over a command containing `$(...)` substitution, so `--body "$(cat <<'EOF' ...)"` triggers a Yes/No prompt on every run with no "Allow always" option. Piping the body in on stdin via heredoc redirection is not command substitution — the matcher sees a clean `gh pr create …` invocation and `Bash(gh:*)` matches. Apply this pattern to every multi-line `--body` / `--notes` in skills (`gh pr create`, `gh issue create`, `gh issue comment`, and `gh release create` all accept `-` for their `*-file` flags).
+Then create the PR (do NOT use `--body`, `--body-file -`, heredocs, or `$(cat ...)`):
+
+```
+gh pr create --base <target-branch> --title "<title>" --body-file /tmp/cc_pr_body.md
+```
+
+> **IMPORTANT — never pass body content inline in the `gh` command.** Do not use `--body`, `--body-file -`, heredocs (`<<EOF` or `<<'EOF'`), or `$(cat ...)`. All of these embed markdown in a Bash command, which triggers permission prompts that cannot be permanently allowed (the shell parser flags `#` headings, quoted delimiters, and substitutions). The two-step pattern above — file-writing tool then `--body-file <path>` — is the only approach that works without prompts across Claude Code, Gemini CLI, Cursor, and Codex.
 
 Add `--reviewer` to the `gh pr create` command above using the handles from `@sebastientaggart`. Before passing them, strip any leading `@` from each comma-separated handle (e.g. `@alice,@org/team` becomes `alice,org/team`) — the `gh` CLI requires bare usernames.
 
@@ -220,14 +227,20 @@ If no linked issue was found, skip silently.
 
 Read the issue body (from Step 3 or via `gh issue view <number>`) to recall the original problem description. Then post a comment summarizing what was done:
 
-```
-gh issue comment <number> --body-file - <<'EOF'
+Use your file-writing tool (not Bash) to create `/tmp/cc_resolution_comment.md`:
+
+```markdown
 ## Resolution
 
 <1-3 sentences explaining what was done to fix the problem, written in plain language for a non-technical audience — no code, no file paths, no jargon. Focus on what changed from the user's perspective and why it solves the problem described in the issue.>
 
 See #<PR-number> for full technical details.
-EOF
+```
+
+Then post it (do NOT use `--body` or heredocs):
+
+```
+gh issue comment <number> --body-file /tmp/cc_resolution_comment.md
 ```
 
 **Resolution writing rules:**
@@ -263,17 +276,23 @@ Accept: comma-separated numbers, `all`, or `none`/`skip`/empty. If the input is 
 
 **Create the selected issues.** For each selected finding, run `gh issue create` with explicit flags:
 
-```
-gh issue create \
-  --title "<finding text with [WARNING]/[NOTE]/[CRITICAL] prefix stripped, trimmed to a standalone sentence>" \
-  [--label "<pool-selected labels>"] \
-  --body-file - <<'EOF'
+Use your file-writing tool (not Bash) to create `/tmp/cc_followup_body.md` for each finding:
+
+```markdown
 Follow-up from PR #<merged-pr-number> — auto-proposed from the code review.
 
 **Finding:** <full finding text, prefix included>
 
 See the review comment on the PR for context.
-EOF
+```
+
+Then create the issue (do NOT use `--body` or heredocs):
+
+```
+gh issue create \
+  --title "<finding text with [WARNING]/[NOTE]/[CRITICAL] prefix stripped, trimmed to a standalone sentence>" \
+  [--label "<pool-selected labels>"] \
+  --body-file /tmp/cc_followup_body.md
 ```
 
 Label resolution for each follow-up issue: use the pool-based selection tier from `/start` — pick 1–3 labels from `bug, documentation, enhancement, chore` that genuinely fit the finding. If `bug, documentation, enhancement, chore` is empty or no pool label fits, omit `--label`. Do not attempt per-invocation flag resolution (there is no flag here) and never create new labels from follow-ups, even if label creation is enabled for the project.
@@ -299,4 +318,4 @@ If a single `gh issue create` call fails, report the failure for that finding an
 - `/submit-for-review` merges only to `dev` — never directly to `main`.
 - If `make merge` fails for any reason, report it and stop — do not attempt workarounds.
 - The follow-up issue offer in Step 9 runs only after a successful merge and only when the review produced non-blocking findings. Never prompt the user for follow-ups when the review blocked the merge — those findings should be fixed, not ticketed.
-<!-- generated by CodeCannon/sync.sh | skill: submit-for-review | adapter: cursor | hash: d2df6354 | DO NOT EDIT — run CodeCannon/sync.sh to regenerate -->
+<!-- generated by CodeCannon/sync.sh | skill: submit-for-review | adapter: cursor | hash: 141fa52f | DO NOT EDIT — run CodeCannon/sync.sh to regenerate -->
