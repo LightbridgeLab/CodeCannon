@@ -288,7 +288,7 @@ Wait for response.
 
 After this step (or if labels were non-zero initially), run `gh label list --limit 100 --json name,color,description` again.
 
-If `TICKET_LABELS` is unset or fewer than 5 labels exist, add a note: "`/start` works best with a clear issue-label pool (`TICKET_LABELS`), and `/qa` needs explicit QA lifecycle labels (`ready-for-qa`, `qa-passed`, `qa-failed`). If the team runs planned iterations, set `DEFAULT_MILESTONE` in Phase 3; otherwise leave it unset so `/start` auto-detects."
+If `TICKET_LABELS` is unset or fewer than 5 labels exist, add a note: "`/start` works best with a clear issue-label pool (`TICKET_LABELS`), and `/qa` needs explicit QA lifecycle labels (`ready-for-qa`, `qa-passed`, `qa-failed`). Consider a lightweight priority scheme (e.g. `priority:high`, `priority:medium`, `priority:low`) if the team needs triage support. If the team runs planned iterations, set `DEFAULT_MILESTONE` in Phase 3; otherwise leave it unset so `/start` auto-detects."
 
 Display the results as a numbered list:
 
@@ -336,7 +336,7 @@ The walkthrough adapts based on profile. Walk through each applicable unset valu
 |---|---|---|---|
 | `DEFAULT_MILESTONE` | Governed, Custom | Default milestone for `/start` issues | `"Sprint 4"` — "Which milestone, if any?" |
 | `DEFAULT_REVIEWERS` | Standard, Governed, Custom | PR reviewers for `/submit-for-review` | `"@alice,@bob"` — "Who should review PRs?" |
-| `TICKET_LABEL_CREATION_ALLOWED` | Standard, Governed, Custom | Allow `/start` to create new labels on the fly | `"true"` — "Allow label creation? (true/false)" |
+| `TICKET_LABEL_CREATION_ALLOWED` | Standard, Governed, Custom | Allow `/start` to create new labels on the fly (defaults to `false`) | `"true"` — "Allow label creation? (true/false)" |
 | `PLATFORM_COMPLIANCE_NOTES` | All | Platform-specific rules for the review agent | "What backend/infra? (Postgres, Next.js, etc.)" |
 | `CONVENTIONS_NOTES` | All | Non-obvious team conventions for the review agent | "What conventions should a reviewer catch?" |
 
