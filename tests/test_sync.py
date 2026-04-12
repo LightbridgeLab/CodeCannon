@@ -679,6 +679,18 @@ class TestValidatePlaceholders(unittest.TestCase):
 class TestMainCLI(unittest.TestCase):
     """Test main() behavior via subprocess or sys.exit interception."""
 
+    def setUp(self):
+        self._original_cwd = os.getcwd()
+
+    def tearDown(self):
+        os.chdir(self._original_cwd)
+
+    def _chdir_to_project(self):
+        """Change to the project root if .codecannon.yaml exists, else skip."""
+        if not (REPO_ROOT / ".codecannon.yaml").exists():
+            self.skipTest(".codecannon.yaml not found in repo root")
+        os.chdir(REPO_ROOT)
+
     def test_missing_config_exits_1(self):
         with tempfile.TemporaryDirectory() as tmpdir:
             with patch("sys.argv", ["sync.py", "--config", os.path.join(tmpdir, "nope.yaml")]):
@@ -688,81 +700,44 @@ class TestMainCLI(unittest.TestCase):
 
     def test_validate_with_real_config(self):
         """Running --validate against the real project config should pass."""
-        original_cwd = os.getcwd()
-        # Find the project root (where .codecannon.yaml lives)
-        project_root = REPO_ROOT
-        # We need to be in a directory with .codecannon.yaml for this to work.
-        # The CodeCannon repo is its own consumer, so REPO_ROOT has .codecannon.yaml.
-        if not (project_root / ".codecannon.yaml").exists():
-            self.skipTest(".codecannon.yaml not found in repo root")
-        try:
-            os.chdir(project_root)
-            with patch("sys.argv", ["sync.py", "--validate"]):
-                # Should not raise
-                sync.main()
-        finally:
-            os.chdir(original_cwd)
+        self._chdir_to_project()
+        with patch("sys.argv", ["sync.py", "--validate"]):
+            sync.main()
 
     def test_dry_run_with_real_config(self):
         """Running --dry-run against the real project should exit 0 (no drift) or 1 (drift)."""
-        original_cwd = os.getcwd()
-        project_root = REPO_ROOT
-        if not (project_root / ".codecannon.yaml").exists():
-            self.skipTest(".codecannon.yaml not found in repo root")
-        try:
-            os.chdir(project_root)
-            with patch("sys.argv", ["sync.py", "--dry-run"]):
-                try:
-                    sync.main()
-                except SystemExit as e:
-                    # Exit 1 means drift — acceptable in test context
-                    self.assertIn(e.code, (None, 0, 1))
-        finally:
-            os.chdir(original_cwd)
+        self._chdir_to_project()
+        with patch("sys.argv", ["sync.py", "--dry-run"]):
+            try:
+                sync.main()
+            except SystemExit as e:
+                self.assertIn(e.code, (None, 0, 1))
 
     def test_no_adapters_exits_1(self):
         with tempfile.TemporaryDirectory() as tmpdir:
             cfg = Path(tmpdir) / "empty.yaml"
             cfg.write_text("config:\n  FOO: bar\n")
+            os.chdir(tmpdir)
             with patch("sys.argv", ["sync.py", "--config", str(cfg)]):
-                original_cwd = os.getcwd()
-                try:
-                    os.chdir(tmpdir)
-                    with self.assertRaises(SystemExit) as ctx:
-                        sync.main()
-                    self.assertEqual(ctx.exception.code, 1)
-                finally:
-                    os.chdir(original_cwd)
-
-    def test_skill_filter(self):
-        """--skill flag should restrict which skills are synced."""
-        original_cwd = os.getcwd()
-        project_root = REPO_ROOT
-        if not (project_root / ".codecannon.yaml").exists():
-            self.skipTest(".codecannon.yaml not found in repo root")
-        try:
-            os.chdir(project_root)
-            with patch("sys.argv", ["sync.py", "--dry-run", "--skill", "checkpoint"]):
-                try:
-                    sync.main()
-                except SystemExit:
-                    pass  # acceptable
-        finally:
-            os.chdir(original_cwd)
-
-    def test_nonexistent_skill_filter_exits_1(self):
-        original_cwd = os.getcwd()
-        project_root = REPO_ROOT
-        if not (project_root / ".codecannon.yaml").exists():
-            self.skipTest(".codecannon.yaml not found in repo root")
-        try:
-            os.chdir(project_root)
-            with patch("sys.argv", ["sync.py", "--dry-run", "--skill", "nonexistent_skill_xyz"]):
                 with self.assertRaises(SystemExit) as ctx:
                     sync.main()
                 self.assertEqual(ctx.exception.code, 1)
-        finally:
-            os.chdir(original_cwd)
+
+    def test_skill_filter(self):
+        """--skill flag should restrict which skills are synced."""
+        self._chdir_to_project()
+        with patch("sys.argv", ["sync.py", "--dry-run", "--skill", "checkpoint"]):
+            try:
+                sync.main()
+            except SystemExit:
+                pass  # acceptable
+
+    def test_nonexistent_skill_filter_exits_1(self):
+        self._chdir_to_project()
+        with patch("sys.argv", ["sync.py", "--dry-run", "--skill", "nonexistent_skill_xyz"]):
+            with self.assertRaises(SystemExit) as ctx:
+                sync.main()
+            self.assertEqual(ctx.exception.code, 1)
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -776,10 +751,15 @@ class TestGoldenFileSnapshots(unittest.TestCase):
     This is a regression test: if a skill template or the sync engine changes,
     the on-disk output should also be updated (via ./sync.py). If it drifts,
     these tests catch it — same as the CI dry-run check, but at unittest level.
+
+    Uses sync_skill to render into a temp directory, then compares against
+    the on-disk files. This avoids duplicating the rendering pipeline.
     """
 
     def test_all_generated_files_are_current(self):
         """Every generated file on disk should match what sync would produce today."""
+        import shutil
+
         project_root = REPO_ROOT
         config_path = project_root / ".codecannon.yaml"
         if not config_path.exists():
@@ -792,44 +772,44 @@ class TestGoldenFileSnapshots(unittest.TestCase):
 
         skills_dir = REPO_ROOT / "skills"
         skill_files = sorted(skills_dir.glob("*.md"))
+        args = _make_args()
 
-        stale = []
-        for adapter_name in adapters_list:
-            adapter = sync.load_adapter(adapter_name)
-            if not adapter:
-                continue
-            for skill_path in skill_files:
-                raw = skill_path.read_text()
-                fm, body = sync.parse_frontmatter(raw)
-                skill_name = fm.get("skill", skill_path.stem)
-                no_header = fm.get("no_invocation_header", "false").lower() == "true"
-                output_path_override = fm.get("output_path_override", "")
-
-                body = sync.apply_conditionals(body, project_config)
-                body = sync.apply_placeholders(body, project_config)
-                if fm.get("description"):
-                    fm["description"] = sync.apply_placeholders(fm["description"], project_config)
-                if output_path_override:
-                    output_path_override = sync.apply_placeholders(output_path_override, project_config)
-
-                header = "" if no_header else sync.build_header(adapter, skill_name, fm)
-                full_content = header + body + "\n"
-                h = sync.content_hash(full_content)
-
-                if output_path_override:
-                    out_path = project_root / output_path_override
-                else:
-                    ext = adapter["output_extension"]
-                    out_dir = project_root / adapter["output_directory"]
-                    out_path = out_dir / f"{skill_name}{ext}"
-
-                if not out_path.exists():
-                    stale.append(f"{adapter_name}/{skill_name}: file missing at {out_path}")
+        tmpdir = Path(tempfile.mkdtemp())
+        try:
+            stale = []
+            for adapter_name in adapters_list:
+                adapter = sync.load_adapter(adapter_name)
+                if not adapter:
                     continue
+                for skill_path in skill_files:
+                    # Render via sync_skill into the temp directory
+                    sync.sync_skill(skill_path, adapter, project_config, tmpdir, args)
 
-                stored_hash, body_hash, is_generated, _ = sync.read_file_info(out_path)
-                if body_hash != h:
-                    stale.append(f"{adapter_name}/{skill_name}: hash mismatch (disk={body_hash}, expected={h})")
+                    # Determine the output path (mirrors sync_skill logic)
+                    raw = skill_path.read_text()
+                    fm, _ = sync.parse_frontmatter(raw)
+                    skill_name = fm.get("skill", skill_path.stem)
+                    output_path_override = fm.get("output_path_override", "")
+                    if output_path_override:
+                        output_path_override = sync.apply_placeholders(output_path_override, project_config)
+                        fresh_path = tmpdir / output_path_override
+                        disk_path = project_root / output_path_override
+                    else:
+                        ext = adapter["output_extension"]
+                        fresh_path = tmpdir / adapter["output_directory"] / f"{skill_name}{ext}"
+                        disk_path = project_root / adapter["output_directory"] / f"{skill_name}{ext}"
+
+                    if not disk_path.exists():
+                        stale.append(f"{adapter_name}/{skill_name}: file missing at {disk_path}")
+                        continue
+
+                    if not fresh_path.exists():
+                        continue  # sync_skill decided not to write (shouldn't happen on fresh dir)
+
+                    if fresh_path.read_text() != disk_path.read_text():
+                        stale.append(f"{adapter_name}/{skill_name}: content differs from freshly rendered output")
+        finally:
+            shutil.rmtree(tmpdir, ignore_errors=True)
 
         if stale:
             self.fail(
