@@ -14,14 +14,14 @@ Install it once per clone:
 cat > .git/hooks/pre-commit << 'EOF'
 #!/bin/sh
 # Ensure agent skill files are in sync before committing.
-# sync.sh --dry-run exits 1 if any files need regeneration.
-./sync.sh --dry-run 2>/dev/null
+# sync.py --dry-run exits 1 if any files need regeneration.
+./sync.py --dry-run 2>/dev/null
 if [ $? -ne 0 ]; then
-  echo "Skills are out of sync. Run ./sync.sh --force before committing."
+  echo "Skills are out of sync. Run ./sync.py --force before committing."
   exit 1
 fi
 EOF
 chmod +x .git/hooks/pre-commit
 ```
 
-If a commit is rejected, run `./sync.sh --force` and retry.
+If a commit is rejected, run `./sync.py --force` and retry.

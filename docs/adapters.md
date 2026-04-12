@@ -45,7 +45,7 @@ adapters:
   - gemini
 ```
 
-Run `sync.sh` to generate files for all listed adapters. You can enable both simultaneously — they write to different directories and don't conflict.
+Run `sync.py` to generate files for all listed adapters. You can enable both simultaneously — they write to different directories and don't conflict.
 
 ## How adapters work
 
@@ -70,7 +70,7 @@ To support a new AI coding agent:
 
 2. Create `adapters/<name>/header.md` — the invocation header that tells the agent how to interpret the skill. Use `{skill}` and `{description}` as placeholders for the skill name and description.
 
-3. Test with `sync.sh --skill start` against a test project.
+3. Test with `sync.py --skill start` against a test project.
 
 4. Document any adapter limitations in `config.yaml` under `notes`.
 
