@@ -237,7 +237,7 @@ Read the issue body (from Step 3 or via `gh issue view <number>`) to recall the 
 Use your file-writing tool (not Bash) to create `<tmpdir>/resolution_comment.md` (same temp directory from Step 6):
 
 ```markdown
-### Resolution Notes
+## Resolution
 
 <1-3 sentences explaining what was done to fix the problem, written in plain language for a non-technical audience — no code, no file paths, no jargon. Focus on what changed from the user's perspective and why it solves the problem described in the issue.>
 
