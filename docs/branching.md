@@ -84,9 +84,9 @@ The agent will not proceed past these checks. There is no override flag — if y
 
 When working on multiple features simultaneously, **sequence tasks that touch overlapping files — don't parallelize them.** Submit and merge the first branch before starting the second.
 
-This is especially important for tasks that involve renaming, restructuring, or updating cross-references across skills. These changes tend to be broad in scope (touching many files) even though the individual edits are small. Running `sync.sh` amplifies the problem further: a one-line edit in a source skill becomes changes across every adapter directory (`.claude/`, `.cursor/`, `.agents/`, `.gemini/`), multiplying the conflict surface.
+This is especially important for tasks that involve renaming, restructuring, or updating cross-references across skills. These changes tend to be broad in scope (touching many files) even though the individual edits are small. Running `sync.py` amplifies the problem further: a one-line edit in a source skill becomes changes across every adapter directory (`.claude/`, `.cursor/`, `.agents/`, `.gemini/`), multiplying the conflict surface.
 
-If you do end up with parallel branches that conflict, the cleanest resolution is usually to re-apply the smaller change on a fresh branch off the updated integration branch, rather than resolving conflicts file-by-file. The mechanical nature of most cross-cutting changes (find-and-replace + `sync.sh`) makes this fast and reliable.
+If you do end up with parallel branches that conflict, the cleanest resolution is usually to re-apply the smaller change on a fresh branch off the updated integration branch, rather than resolving conflicts file-by-file. The mechanical nature of most cross-cutting changes (find-and-replace + `sync.py`) makes this fast and reliable.
 
 ## Cleaning up merged branches
 

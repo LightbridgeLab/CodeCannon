@@ -7,5 +7,5 @@ jobs:
       - uses: actions/checkout@v5
       - name: Check for sync drift
         run: |
-          ./sync.sh --dry-run
+          ./sync.py --dry-run
           # exits non-zero if any files would be written

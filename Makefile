@@ -35,16 +35,16 @@ help:
 
 # Validate that all skill placeholders resolve against the config.
 check:
-	./sync.sh --validate
+	./sync.py --validate
 
 # Preview what sync would generate without writing any files.
 dev:
-	./sync.sh --validate
-	./sync.sh --dry-run
+	./sync.py --validate
+	./sync.py --dry-run
 
 # Regenerate .claude/commands/ and other adapter output from skills/.
 sync:
-	./sync.sh
+	./sync.py
 
 # Bump the patch segment (X.Y.Z → X.Y.Z+1), commit, and tag.
 bump-patch:

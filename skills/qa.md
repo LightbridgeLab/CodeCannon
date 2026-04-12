@@ -8,7 +8,7 @@ args: "none | issue number"
 {{#if !QA_READY_LABEL}}
 > **QA workflow is not configured.** `/qa` requires `QA_READY_LABEL` to be set in `.codecannon.yaml` so it can find issues waiting for QA.
 >
-> To enable: add `QA_READY_LABEL: ready-for-qa` (or your preferred label name) to `.codecannon.yaml` and re-run `CodeCannon/sync.sh`.
+> To enable: add `QA_READY_LABEL: ready-for-qa` (or your preferred label name) to `.codecannon.yaml` and re-run `CodeCannon/sync.py`.
 >
 > Note: In trunk mode, `/submit-for-review` does not apply this label automatically — you would need to apply it manually or via a separate workflow.
 

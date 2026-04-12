@@ -5,8 +5,8 @@ Code Cannon is a portable agent workflow skill library. Write your team's develo
 ## How it works
 
 1. **Skills** live in `skills/` as plain markdown with `{{PLACEHOLDER}}` tokens for project-specific values.
-2. **`sync.sh`** reads your project config (`.codecannon.yaml`), substitutes values, wraps each skill in an agent-specific invocation header, and writes the generated files to the right place (`.claude/commands/`, `.cursor/rules/`, etc.).
-3. **Generated files** carry a hash so sync.sh can detect manual edits and warn before overwriting.
+2. **`sync.py`** reads your project config (`.codecannon.yaml`), substitutes values, wraps each skill in an agent-specific invocation header, and writes the generated files to the right place (`.claude/commands/`, `.cursor/rules/`, etc.).
+3. **Generated files** carry a hash so sync.py can detect manual edits and warn before overwriting.
 
 ## The workflow
 
@@ -37,6 +37,8 @@ The agent commits; you test. `/start` writes code but does not commit — it han
 
 ## Quickstart
 
+**Requires Python 3.8+** (stdlib only — no pip install needed).
+
 ### 1. Add Code Cannon as a submodule
 
 ```bash
@@ -55,7 +57,7 @@ Edit `.codecannon.yaml` — set your branch names, check command, deploy command
 ### 3. Run sync
 
 ```bash
-CodeCannon/sync.sh
+CodeCannon/sync.py
 ```
 
 This generates skill files for each adapter listed in your config. For Claude Code, that's `.claude/commands/*.md`. For Cursor, `.cursor/rules/*.mdc`.
@@ -89,10 +91,10 @@ Or skip all of this and run `/setup` for a guided walkthrough.
 
 ```bash
 git submodule update --remote CodeCannon   # pull latest skills
-CodeCannon/sync.sh                         # regenerate skill files
+CodeCannon/sync.py                         # regenerate skill files
 ```
 
-If any generated files have been manually customized, sync.sh will warn and skip them. Use `--force` to overwrite.
+If any generated files have been manually customized, sync.py will warn and skip them. Use `--force` to overwrite.
 
 ## Migrating from the old `agentgate` submodule
 
@@ -100,7 +102,7 @@ If your project still uses the previous repo URL or folder name:
 
 1. Point `.gitmodules` at `https://github.com/LightbridgeLab/CodeCannon.git` and use submodule path `CodeCannon/` (or rename your existing checkout to match).
 2. Rename `.agentgate.yaml` to `.codecannon.yaml`.
-3. Run `CodeCannon/sync.sh --force` once if needed so generated file headers match the new provenance marker.
+3. Run `CodeCannon/sync.py --force` once if needed so generated file headers match the new provenance marker.
 
 ## Further reading
 

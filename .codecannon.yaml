@@ -1,7 +1,7 @@
 # .codecannon.yaml — project configuration for Code Cannon skill sync
 #
-# This is Code Cannon's own config. Unlike consumer projects (which run CodeCannon/sync.sh),
-# this repo runs sync as ./sync.sh — Code Cannon is not a submodule of itself.
+# This is Code Cannon's own config. Unlike consumer projects (which run CodeCannon/sync.py),
+# this repo runs sync as ./sync.py — Code Cannon is not a submodule of itself.
 #
 # See config.schema.yaml for documentation on each placeholder.
 
@@ -14,7 +14,7 @@ adapters:
   - gemini
 
 # Placeholder values substituted into skill files during sync.
-# Remove any you don't need; sync.sh will warn about unresolved placeholders.
+# Remove any you don't need; sync.py will warn about unresolved placeholders.
 config:
   BRANCH_PROD: main
   BRANCH_DEV: dev

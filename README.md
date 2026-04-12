@@ -1,6 +1,6 @@
 ![Code Cannon](.github/assets/readme-header.png)
 
-[![CI](https://github.com/LightbridgeLab/CodeCannon/actions/workflows/sync-check.yml/badge.svg)](https://github.com/LightbridgeLab/CodeCannon/actions/workflows/sync-check.yml) [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE) [![GitHub release](https://img.shields.io/github/v/release/LightbridgeLab/CodeCannon)](https://github.com/LightbridgeLab/CodeCannon/releases) [![Last Commit](https://img.shields.io/github/last-commit/LightbridgeLab/CodeCannon)](https://github.com/LightbridgeLab/CodeCannon/commits) [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](docs/contributing.md) [![Python](https://img.shields.io/badge/Python-3.x-blue?logo=python&logoColor=white)](sync.sh) [![Install](https://img.shields.io/badge/install-git%20submodule-blue?logo=git&logoColor=white)](https://github.com/LightbridgeLab/CodeCannon#quick-start)
+[![CI](https://github.com/LightbridgeLab/CodeCannon/actions/workflows/sync-check.yml/badge.svg)](https://github.com/LightbridgeLab/CodeCannon/actions/workflows/sync-check.yml) [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE) [![GitHub release](https://img.shields.io/github/v/release/LightbridgeLab/CodeCannon)](https://github.com/LightbridgeLab/CodeCannon/releases) [![Last Commit](https://img.shields.io/github/last-commit/LightbridgeLab/CodeCannon)](https://github.com/LightbridgeLab/CodeCannon/commits) [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](docs/contributing.md) [![Python](https://img.shields.io/badge/Python-3.x-blue?logo=python&logoColor=white)](sync.py) [![Install](https://img.shields.io/badge/install-git%20submodule-blue?logo=git&logoColor=white)](https://github.com/LightbridgeLab/CodeCannon#quick-start)
 
 # Code Cannon
 
@@ -15,7 +15,7 @@ AI coding agents are powerful, but every project reinvents the same workflows: h
 Code Cannon is a shared skill library that lives as a git submodule. Skills are written once as portable markdown. A sync script reads your project config and generates agent-specific command files:
 
 ```
-skills/*.md  →  sync.sh + .codecannon.yaml  →  .claude/commands/*.md
+skills/*.md  →  sync.py + .codecannon.yaml  →  .claude/commands/*.md
                                               →  .cursor/rules/*.mdc
 ```
 
@@ -51,10 +51,12 @@ Plus `/qa` for structured QA workflows and `/setup` for guided onboarding.
 
 ## Quick start
 
+Requires Python 3.8+ (stdlib only — no pip install needed).
+
 ```bash
 git submodule add https://github.com/LightbridgeLab/CodeCannon.git CodeCannon
 cp CodeCannon/templates/codecannon.yaml .codecannon.yaml
-CodeCannon/sync.sh
+CodeCannon/sync.py
 ```
 
 Then optionally run `/setup` for a guided walkthrough.
@@ -62,14 +64,14 @@ Then optionally run `/setup` for a guided walkthrough.
 To update to the latest version:
 
 ```bash
-CodeCannon/sync.sh --update
+CodeCannon/sync.py --update
 ```
 
 ## Documentation
 
 - **[Getting started](docs/index.md)** — full quickstart, migration guide, and workflow details
 - **[Branching models](docs/branching.md)** — trunk, two-branch, and three-branch workflows
-- **[Customization](docs/customization.md)** — tailoring skills, sync.sh reference
+- **[Customization](docs/customization.md)** — tailoring skills, sync.py reference
 - **[Config reference](docs/config-reference.md)** — every `.codecannon.yaml` setting documented
 - **[Adapters](docs/adapters.md)** — supported agents and how to add new ones
 - **Skill reference:** [/start](docs/skills/start.md) · [/submit-for-review](docs/skills/submit-for-review.md) · [/review](docs/skills/review.md) · [/deploy](docs/skills/deploy.md) · [/qa](docs/skills/qa.md) · [/status](docs/skills/status.md) · [/setup](docs/skills/setup.md)
