@@ -1,0 +1,27 @@
+name: Tests
+on: [push, pull_request]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.9", "3.12"]
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Run tests
+        run: python3 -m unittest discover -s tests -v
+      - name: Run tests with coverage
+        if: matrix.python-version == '3.12'
+        run: |
+          python3 -m coverage run -m unittest discover -s tests
+          python3 -m coverage report --show-missing
+          python3 -m coverage xml -o coverage.xml
+      - name: Upload coverage to Codecov
+        if: matrix.python-version == '3.12' && github.event_name == 'push'
+        uses: codecov/codecov-action@v5
+        with:
+          files: coverage.xml
+          fail_ci_if_not_uploaded: false
