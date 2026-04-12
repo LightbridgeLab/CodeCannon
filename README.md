@@ -1,10 +1,25 @@
-![Code Cannon](.github/assets/readme-header.png)
+<h1 align="center">Code Cannon</h1>
+<p align="center">
+  <strong>Write your AI agent workflow once. Sync it everywhere.</strong>
+</p>
+<p align="center">
+  Portable skills for Claude Code, Cursor, Gemini, and Codex — start, review, deploy — across all your projects.
+</p>
+<p align="center">
+  <a href="https://github.com/LightbridgeLab/CodeCannon/actions/workflows/sync-check.yml"><img src="https://github.com/LightbridgeLab/CodeCannon/actions/workflows/sync-check.yml/badge.svg" alt="CI"></a>
+  <a href="https://github.com/LightbridgeLab/CodeCannon/actions/workflows/test.yml"><img src="https://github.com/LightbridgeLab/CodeCannon/actions/workflows/test.yml/badge.svg" alt="Tests"></a>
+  <a href="https://codecov.io/gh/LightbridgeLab/CodeCannon"><img src="https://codecov.io/gh/LightbridgeLab/CodeCannon/branch/main/graph/badge.svg" alt="codecov"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License: MIT"></a>
+  <a href="https://github.com/LightbridgeLab/CodeCannon/releases"><img src="https://img.shields.io/github/v/release/LightbridgeLab/CodeCannon" alt="GitHub release"></a>
+  <a href="https://github.com/LightbridgeLab/CodeCannon/commits"><img src="https://img.shields.io/github/last-commit/LightbridgeLab/CodeCannon" alt="Last Commit"></a>
+  <a href="docs/contributing.md"><img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" alt="PRs Welcome"></a>
+  <a href="sync.py"><img src="https://img.shields.io/badge/Python-3.x-blue?logo=python&logoColor=white" alt="Python"></a>
+  <a href="https://github.com/LightbridgeLab/CodeCannon#quick-start"><img src="https://img.shields.io/badge/install-git%20submodule-blue?logo=git&logoColor=white" alt="Install"></a>
+</p>
 
-[![CI](https://github.com/LightbridgeLab/CodeCannon/actions/workflows/sync-check.yml/badge.svg)](https://github.com/LightbridgeLab/CodeCannon/actions/workflows/sync-check.yml) [![Tests](https://github.com/LightbridgeLab/CodeCannon/actions/workflows/test.yml/badge.svg)](https://github.com/LightbridgeLab/CodeCannon/actions/workflows/test.yml) [![codecov](https://codecov.io/gh/LightbridgeLab/CodeCannon/branch/main/graph/badge.svg)](https://codecov.io/gh/LightbridgeLab/CodeCannon) [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE) [![GitHub release](https://img.shields.io/github/v/release/LightbridgeLab/CodeCannon)](https://github.com/LightbridgeLab/CodeCannon/releases) [![Last Commit](https://img.shields.io/github/last-commit/LightbridgeLab/CodeCannon)](https://github.com/LightbridgeLab/CodeCannon/commits) [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](docs/contributing.md) [![Python](https://img.shields.io/badge/Python-3.x-blue?logo=python&logoColor=white)](sync.py) [![Install](https://img.shields.io/badge/install-git%20submodule-blue?logo=git&logoColor=white)](https://github.com/LightbridgeLab/CodeCannon#quick-start)
-
-# Code Cannon
-
-Write your team's AI agent workflow once — start, submit-for-review, review, deploy — and sync it to Claude Code, Cursor, Gemini, and Codex across all your projects.
+<p align="center">
+  <img src=".github/assets/readme-header.png" alt="Code Cannon" />
+</p>
 
 ## The problem
 
