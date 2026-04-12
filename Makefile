@@ -7,7 +7,7 @@ INTEGRATION_BRANCH = dev
 include Makefile.agents.mk
 
 .DEFAULT_GOAL := help
-.PHONY: help check dev sync test bump-patch bump-minor bump-major set-version deploy-preview deploy-prod
+.PHONY: help check dev sync test bump-patch bump-minor bump-major set-version deploy-preview deploy-prod roll-call
 
 help:
 	@echo "Usage: make <target>"
@@ -33,6 +33,9 @@ help:
 	@echo "Deployment"
 	@echo "  deploy-preview   Push $(INTEGRATION_BRANCH) for preview/testing"
 	@echo "  deploy-prod      Push $(PRODUCTION_BRANCH) with tags"
+	@echo ""
+	@echo "Community"
+	@echo "  roll-call        Say hello — let us know you're using CodeCannon"
 
 # Validate that all skill placeholders resolve against the config.
 check:
@@ -106,3 +109,51 @@ deploy-prod:
 	git pull --rebase origin $(PRODUCTION_BRANCH)
 	git fetch origin --tags --force
 	git push origin $(PRODUCTION_BRANCH) --tags
+
+# ── Community ───────────────────────────────────────────────────────────────
+
+# Discussion node ID for the Roll Call registry (LightbridgeLab/CodeCannon #133).
+ROLL_CALL_DISCUSSION_ID := D_kwDORls6r84Alpjt
+
+# Post a voluntary check-in to the CodeCannon Installation Registry discussion.
+roll-call:
+	@# ── Preflight: gh must be installed and authenticated ──
+	@command -v gh >/dev/null 2>&1 || { echo "Error: gh CLI is not installed. See https://cli.github.com"; exit 1; }
+	@gh auth status >/dev/null 2>&1 || { echo "Error: not authenticated. Run 'gh auth login' first."; exit 1; }
+	@# ── Gather metadata ──
+	@repo=$$(gh repo view --json nameWithOwner -q '.nameWithOwner' 2>/dev/null || echo "unknown"); \
+	if [ -f CodeCannon/VERSION ]; then \
+		version=$$(cat CodeCannon/VERSION); \
+	elif [ -f VERSION ]; then \
+		version=$$(cat VERSION); \
+	else \
+		version="unknown"; \
+	fi; \
+	if [ -f .codecannon.yaml ]; then \
+		adapters=$$(grep -E '^\s*-\s+' .codecannon.yaml | grep -io 'claude\|cursor\|gemini\|codex' | sort -u | paste -sd ', ' -); \
+	fi; \
+	adapters=$${adapters:-none detected}; \
+	date=$$(date +%Y-%m-%d); \
+	body="📡 **$$repo** — v$$version — adapters: $$adapters — $$date"; \
+	echo ""; \
+	echo "  Roll Call — CodeCannon Installation Registry"; \
+	echo "  ─────────────────────────────────────────────"; \
+	echo "  Repo:      $$repo"; \
+	echo "  Version:   v$$version"; \
+	echo "  Adapters:  $$adapters"; \
+	echo "  Date:      $$date"; \
+	echo ""; \
+	echo "  This will post a comment to the public CodeCannon discussion:"; \
+	echo "  https://github.com/LightbridgeLab/CodeCannon/discussions/133"; \
+	echo ""; \
+	echo "  Your GitHub username and repo name will be visible."; \
+	echo ""; \
+	printf "  Continue? [y/N] "; \
+	read -r confirm; \
+	case "$$confirm" in \
+		[yY]|[yY][eE][sS]) ;; \
+		*) echo "  Cancelled."; exit 0;; \
+	esac; \
+	gh api graphql -f query="mutation { addDiscussionComment(input: {discussionId: \"$(ROLL_CALL_DISCUSSION_ID)\", body: \"$$body\"}) { comment { url } } }" --jq '.data.addDiscussionComment.comment.url' \
+		&& echo "" && echo "  🎉 Thanks for checking in! You're helping make CodeCannon better." \
+		|| { echo ""; echo "  Error: failed to post. Check your gh permissions and try again."; exit 1; }
