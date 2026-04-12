@@ -1,0 +1,38 @@
+name: Sync dev with main
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+  issues: write
+
+jobs:
+  sync-dev:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Fast-forward dev to main
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          git checkout dev
+          if git merge --ff-only origin/main; then
+            git push origin dev
+            echo "✅ dev fast-forwarded to match main"
+          else
+            echo "❌ Fast-forward failed — dev has diverged from main"
+            gh issue create \
+              --title "Dev branch has diverged from main and needs manual sync" \
+              --label "bug" \
+              --body "The automatic fast-forward of \`dev\` to \`main\` failed. This means \`dev\` has commits that are not on \`main\`, preventing an automatic sync.\n\nPlease manually reconcile the branches:\n\`\`\`bash\ngit checkout dev\ngit merge main\n\`\`\`\n\nTriggered by push to main: ${{ github.sha }}"
+            exit 1
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
