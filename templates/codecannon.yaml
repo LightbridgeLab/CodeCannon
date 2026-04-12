@@ -1,7 +1,7 @@
 # .codecannon.yaml — project configuration for Code Cannon skill sync
 #
 # Copy this file to your project root as .codecannon.yaml and customize.
-# Run: CodeCannon/sync.sh
+# Run: CodeCannon/sync.py
 #
 # See CodeCannon/config.schema.yaml for documentation on each placeholder.
 
@@ -14,7 +14,7 @@ adapters:
 #  - codex
 
 # Placeholder values substituted into skill files during sync.
-# Remove any you don't need; sync.sh will warn about unresolved placeholders.
+# Remove any you don't need; sync.py will warn about unresolved placeholders.
 config:
 
   # ── Workflow profile ─────────────────────────────────────────────────────────

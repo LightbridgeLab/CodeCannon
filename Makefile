@@ -7,7 +7,7 @@ INTEGRATION_BRANCH = dev
 include Makefile.agents.mk
 
 .DEFAULT_GOAL := help
-.PHONY: help check dev sync bump-patch bump-minor bump-major set-version deploy-preview deploy-prod
+.PHONY: help check dev sync test bump-patch bump-minor bump-major set-version deploy-preview deploy-prod
 
 help:
 	@echo "Usage: make <target>"
@@ -16,6 +16,7 @@ help:
 	@echo "  check            Validate skill placeholders against config"
 	@echo "  dev              Preview sync output (dry run)"
 	@echo "  sync             Regenerate adapter output from skills/"
+	@echo "  test             Run the sync engine test suite"
 	@echo ""
 	@echo "Git workflow (from Makefile.agents.mk)"
 	@echo "  branch name=X    Create feature branch from $(INTEGRATION_BRANCH)"
@@ -35,16 +36,20 @@ help:
 
 # Validate that all skill placeholders resolve against the config.
 check:
-	./sync.sh --validate
+	./sync.py --validate
 
 # Preview what sync would generate without writing any files.
 dev:
-	./sync.sh --validate
-	./sync.sh --dry-run
+	./sync.py --validate
+	./sync.py --dry-run
 
 # Regenerate .claude/commands/ and other adapter output from skills/.
 sync:
-	./sync.sh
+	./sync.py
+
+# Run the sync engine test suite.
+test:
+	python3 -m unittest discover -s tests -v
 
 # Bump the patch segment (X.Y.Z → X.Y.Z+1), commit, and tag.
 bump-patch:

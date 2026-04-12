@@ -1,6 +1,6 @@
 # Config Reference
 
-All placeholders available in `.codecannon.yaml`. Each is substituted into skill files by `sync.sh`.
+All placeholders available in `.codecannon.yaml`. Each is substituted into skill files by `sync.py`.
 
 For the canonical source, see [`config.schema.yaml`](../config.schema.yaml).
 
@@ -73,4 +73,4 @@ adapters:
   - cursor
 ```
 
-This controls which agent adapters `sync.sh` generates files for. See [adapters](adapters.md) for details on each.
+This controls which agent adapters `sync.py` generates files for. See [adapters](adapters.md) for details on each.

@@ -9,7 +9,7 @@ First-run onboarding and configuration walkthrough.
 `/setup` detects the current state of Code Cannon in your project and guides you through configuration. It handles three scenarios:
 
 1. **You're in the Code Cannon repo itself** — explains how Code Cannon works and offers to help you add it to your project.
-2. **Partial setup** — the submodule exists but something is missing (sync.sh not initialized, `gh` not installed, config file missing, etc.). Walks through fixes one at a time.
+2. **Partial setup** — the submodule exists but something is missing (sync.py not initialized, `gh` not installed, config file missing, etc.). Walks through fixes one at a time.
 3. **Fully configured** — runs a health check, offers to populate labels from your GitHub repo, and walks through optional config values.
 
 ## Usage
@@ -24,7 +24,7 @@ No arguments. Run it in any project where Code Cannon is (or should be) installe
 
 When the submodule is present, `/setup` runs these checks in order, stopping at the first failure:
 
-1. **`CodeCannon/sync.sh` present** — submodule initialized?
+1. **`CodeCannon/sync.py` present** — submodule initialized?
 2. **`gh` installed** — GitHub CLI available?
 3. **`gh` authenticated** — logged in to GitHub?
 4. **Inside a GitHub repo** — remote configured?
