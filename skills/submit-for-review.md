@@ -35,7 +35,25 @@ If the current branch matches any of the above, **abort immediately** and say:
 
 ## Step 2 — Type-check gate
 
-Run:
+First, move to the repository root so the command resolves against the correct Makefile / project config:
+
+```
+cd "$(git rev-parse --show-toplevel)"
+```
+
+Then verify the make target exists before running it. Extract the target name from `{{CHECK_CMD}}` (e.g. `make check` → `check`) and run:
+
+```
+make -n <target> 2>/dev/null
+```
+
+If `make -n` exits non-zero, **stop** and say:
+
+> "`{{CHECK_CMD}}` failed — the make target does not exist in the root Makefile. Add it and retry, or run `/setup` to reconfigure."
+
+Do not improvise a replacement command. Do not proceed.
+
+If the target exists, run:
 ```
 {{CHECK_CMD}}
 ```
@@ -189,6 +207,18 @@ Wait for the review to complete and report its verdict.
 ---
 
 ## Step 8 — Act on verdict
+
+Before merging, verify the merge target exists. Move to the repo root, extract the target name from `{{MERGE_CMD}}` (e.g. `make merge` → `merge`), and run:
+
+```
+cd "$(git rev-parse --show-toplevel)" && make -n <target> 2>/dev/null
+```
+
+If `make -n` exits non-zero, **stop** and say:
+
+> "`{{MERGE_CMD}}` failed — the make target does not exist in the root Makefile. Add it and retry, or run `/setup` to reconfigure."
+
+Do not improvise a replacement command (e.g. do not fall back to `gh pr merge`). Do not proceed.
 
 {{#if BRANCH_DEV}}
 Merge command (used by all paths below): `{{MERGE_CMD}}`
