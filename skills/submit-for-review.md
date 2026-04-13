@@ -74,12 +74,11 @@ Do not proceed until `{{CHECK_CMD}}` passes cleanly.
 
 ## Step 3 — Identify linked issue
 
-Check for a linked issue by inspecting the branch name (should follow `feature/<name>` linked via `gh issue develop`) or by running:
-```
-gh pr view --json number,body 2>/dev/null
-```
+Extract the issue number from the branch name. Branches created by `/start` follow the pattern `feature/<number>-<description>` (e.g. `feature/42-fix-login`).
 
-If a linked issue number is identifiable, note it for the PR body. If not identifiable, proceed without it but mention this to the user.
+Parse the number from the branch name returned in Step 1. If the branch name matches `feature/<digits>-...`, use the extracted number as the linked issue. If the branch name does not contain a leading number after `feature/`, proceed without an issue reference but warn the user:
+
+> "Could not extract an issue number from branch name `<branch>`. The PR will not include an issue reference. Was this branch created outside of `/start`?"
 
 ---
 

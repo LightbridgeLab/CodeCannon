@@ -264,12 +264,12 @@ Now create the feature branch:
 
 {{#if BRANCH_DEV}}
 ```bash
-gh issue develop <number> --base {{BRANCH_DEV}} --name feature/<short-descriptive-name> --checkout
+gh issue develop <number> --base {{BRANCH_DEV}} --name feature/<number>-<short-descriptive-name> --checkout
 ```
 {{/if}}
 {{#if !BRANCH_DEV}}
 ```bash
-gh issue develop <number> --name feature/<short-descriptive-name> --checkout
+gh issue develop <number> --name feature/<number>-<short-descriptive-name> --checkout
 ```
 {{/if}}
 
@@ -345,12 +345,12 @@ Find and check out the existing branch, or create a new one linked to the issue:
 
 {{#if BRANCH_DEV}}
 ```bash
-gh issue develop <number> --base {{BRANCH_DEV}} --name feature/<short-name> --checkout
+gh issue develop <number> --base {{BRANCH_DEV}} --name feature/<number>-<short-name> --checkout
 ```
 {{/if}}
 {{#if !BRANCH_DEV}}
 ```bash
-gh issue develop <number> --name feature/<short-name> --checkout
+gh issue develop <number> --name feature/<number>-<short-name> --checkout
 ```
 {{/if}}
 
