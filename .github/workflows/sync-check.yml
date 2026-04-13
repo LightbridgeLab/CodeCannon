@@ -1,5 +1,7 @@
 name: Sync check
 on: [push, pull_request]
+permissions:
+  contents: read
 jobs:
   sync-check:
     runs-on: ubuntu-latest

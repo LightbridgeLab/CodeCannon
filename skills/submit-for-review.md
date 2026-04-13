@@ -35,7 +35,31 @@ If the current branch matches any of the above, **abort immediately** and say:
 
 ## Step 2 — Type-check gate
 
-Run:
+First, move to the repository root so the command resolves against the correct Makefile / project config:
+
+```
+git rev-parse --show-toplevel
+```
+
+Then `cd` into the path returned above:
+
+```
+cd <repo-root>
+```
+
+Then verify the make target exists before running it. Extract the target name from `{{CHECK_CMD}}` (e.g. `make check` → `check`) and run:
+
+```
+make -n <target> 2>/dev/null
+```
+
+If `make -n` exits non-zero, **stop** and say:
+
+> "`{{CHECK_CMD}}` failed — the make target does not exist in the root Makefile. Add it and retry, or run `/setup` to reconfigure."
+
+Do not improvise a replacement command. Do not proceed.
+
+If the target exists, run:
 ```
 {{CHECK_CMD}}
 ```
@@ -50,12 +74,11 @@ Do not proceed until `{{CHECK_CMD}}` passes cleanly.
 
 ## Step 3 — Identify linked issue
 
-Check for a linked issue by inspecting the branch name (should follow `feature/<name>` linked via `gh issue develop`) or by running:
-```
-gh pr view --json number,body 2>/dev/null
-```
+Extract the issue number from the branch name. Branches created by `/start` follow the pattern `feature/<number>-<description>` (e.g. `feature/42-fix-login`).
 
-If a linked issue number is identifiable, note it for the PR body. If not identifiable, proceed without it but mention this to the user.
+Parse the number from the branch name returned in Step 1. If the branch name matches `feature/<digits>-...`, use the extracted number as the linked issue. If the branch name does not contain a leading number after `feature/`, proceed without an issue reference but warn the user:
+
+> "Could not extract an issue number from branch name `<branch>`. The PR will not include an issue reference. Was this branch created outside of `/start`?"
 
 ---
 
@@ -189,6 +212,24 @@ Wait for the review to complete and report its verdict.
 ---
 
 ## Step 8 — Act on verdict
+
+Before merging, verify the merge target exists. Move to the repo root, extract the target name from `{{MERGE_CMD}}` (e.g. `make merge` → `merge`), and run:
+
+```
+git rev-parse --show-toplevel
+```
+
+Then `cd` into the path returned above and check the target:
+
+```
+cd <repo-root> && make -n <target> 2>/dev/null
+```
+
+If `make -n` exits non-zero, **stop** and say:
+
+> "`{{MERGE_CMD}}` failed — the make target does not exist in the root Makefile. Add it and retry, or run `/setup` to reconfigure."
+
+Do not improvise a replacement command (e.g. do not fall back to `gh pr merge`). Do not proceed.
 
 {{#if BRANCH_DEV}}
 Merge command (used by all paths below): `{{MERGE_CMD}}`
