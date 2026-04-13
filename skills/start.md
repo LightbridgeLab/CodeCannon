@@ -384,7 +384,7 @@ When done, say: **"The code is ready for review. Please run `{{DEV_CMD}}` and te
 - Do not use `make branch` — always use `gh issue develop` so the branch is linked to the issue in GitHub.
 - Do not commit during `/start` — commits happen in `/submit-for-review`.
 - If already on a feature branch when `/start` is invoked with new work (Case A), prompt the user to either continue on the current branch (skipping branch creation) or abort. See **Pre-check: Existing feature branch** above.
-- `gh issue create` must use `--title` and `--body` flags. Never open an interactive editor.
+- `gh issue create` must use `--title` and `--body-file` flags. Never pass body content inline or open an interactive editor.
 - The issue is assigned to `@me` at creation. If you are creating a ticket on someone else's behalf, remove the assignee after creation with `gh issue edit <number> --remove-assignee @me`.
 {{#if TICKET_LABELS}}
 {{#if TICKET_LABEL_CREATION_ALLOWED}}
