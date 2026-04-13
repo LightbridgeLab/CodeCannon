@@ -38,7 +38,13 @@ If the current branch matches any of the above, **abort immediately** and say:
 First, move to the repository root so the command resolves against the correct Makefile / project config:
 
 ```
-cd "$(git rev-parse --show-toplevel)"
+git rev-parse --show-toplevel
+```
+
+Then `cd` into the path returned above:
+
+```
+cd <repo-root>
 ```
 
 Then verify the make target exists before running it. Extract the target name from `{{CHECK_CMD}}` (e.g. `make check` → `check`) and run:
@@ -211,7 +217,13 @@ Wait for the review to complete and report its verdict.
 Before merging, verify the merge target exists. Move to the repo root, extract the target name from `{{MERGE_CMD}}` (e.g. `make merge` → `merge`), and run:
 
 ```
-cd "$(git rev-parse --show-toplevel)" && make -n <target> 2>/dev/null
+git rev-parse --show-toplevel
+```
+
+Then `cd` into the path returned above and check the target:
+
+```
+cd <repo-root> && make -n <target> 2>/dev/null
 ```
 
 If `make -n` exits non-zero, **stop** and say:
