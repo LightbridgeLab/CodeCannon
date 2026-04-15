@@ -279,14 +279,20 @@ Wait for response.
 git config --get user.signingkey
 ```
 
-**If a signing key is found**, enable signing at the repo level:
+**If a signing key is found**, show the proposed change and confirm:
 
-```bash
-git config commit.gpgsign true
-git config tag.gpgsign true
+```
+I'll enable commit and tag signing for this repo:
+
+  git config commit.gpgsign true
+  git config tag.gpgsign true
+
+  Signing key: <truncated-key>
+
+Proceed? (yes/no)
 ```
 
-Display: `Commit signing enabled (key: <truncated-key>). Tags will also be signed.`
+Wait for confirmation. Write only on yes. If no, skip to Phase 3.
 
 Continue to Phase 3.
 
@@ -299,13 +305,19 @@ git config --get gpg.format
 - If `ssh` → suggest: `git config user.signingkey ~/.ssh/id_ed25519.pub` (adjust path to the user's key). Ask the user for their SSH public key path.
 - If `gpg` or unset → suggest: run `gpg --list-secret-keys --keyid-format=long` to find a key ID. Ask the user for their GPG key ID.
 
-Once the user provides a key value, set it along with signing:
+Once the user provides a key value, show the proposed changes and confirm:
 
-```bash
-git config user.signingkey <provided-key>
-git config commit.gpgsign true
-git config tag.gpgsign true
 ```
+I'll configure signing for this repo:
+
+  git config user.signingkey <provided-key>
+  git config commit.gpgsign true
+  git config tag.gpgsign true
+
+Proceed? (yes/no)
+```
+
+Wait for confirmation. Write only on yes. If no, skip to Phase 3.
 
 If the user has no signing key and doesn't know how to create one, point them to GitHub's signing key documentation and stop: "Set up a signing key first, then run `/setup` again to enable commit signing."
 
@@ -417,10 +429,10 @@ Add a note: `/start` can be used to create well-formed GitHub issues without wri
 
 ## Hard rules
 
-- Only modify `.codecannon.yaml`. Do not touch any other file (except running `CodeCannon/sync.py`, which modifies `.claude/commands/` — permitted only with explicit user approval).
+- Only modify `.codecannon.yaml` and local git config (Phase 2 signing setup). Do not touch any other file (except running `CodeCannon/sync.py`, which modifies `.claude/commands/` — permitted only with explicit user approval).
 - Do not run `sync.py` without explicit user permission.
 - Do not create `.codecannon.yaml` without explicit user permission.
 - Do not report a configuration problem unless confident the condition is genuinely broken. Prefer false negatives over false positives on all diagnostic checks.
 - Never fetch more than 100 labels in a single command. `gh label list --limit 100` is the ceiling.
-- Do not skip any human gate in Phase 3 or Phase 4 — each write requires confirmation.
+- Do not skip any human gate in Phase 2, Phase 3, or Phase 4 — each write requires confirmation.
 - If the user skips a config value, do not ask again. Move on.
