@@ -256,7 +256,62 @@ A value counts as "set" if it is present, uncommented, and non-empty in `.codeca
 
 ---
 
-### Phase 2 — Label population
+### Phase 2 — Commit signing
+
+Check whether commit signing is already configured at any level (local or global):
+
+```bash
+git config --get commit.gpgsign
+```
+
+If the output is `true`, display `Commit signing: enabled` in the health summary area and skip to Phase 3.
+
+If not `true`, ask: **"Does this project require signed commits? (yes/no)"**
+
+Wait for response.
+
+- **no / skip** → continue to Phase 3.
+- **yes** → proceed with signing setup.
+
+**Verify a signing key exists:**
+
+```bash
+git config --get user.signingkey
+```
+
+**If a signing key is found**, enable signing at the repo level:
+
+```bash
+git config commit.gpgsign true
+git config tag.gpgsign true
+```
+
+Display: `Commit signing enabled (key: <truncated-key>). Tags will also be signed.`
+
+Continue to Phase 3.
+
+**If no signing key is found**, detect the signing format:
+
+```bash
+git config --get gpg.format
+```
+
+- If `ssh` → suggest: `git config user.signingkey ~/.ssh/id_ed25519.pub` (adjust path to the user's key). Ask the user for their SSH public key path.
+- If `gpg` or unset → suggest: run `gpg --list-secret-keys --keyid-format=long` to find a key ID. Ask the user for their GPG key ID.
+
+Once the user provides a key value, set it along with signing:
+
+```bash
+git config user.signingkey <provided-key>
+git config commit.gpgsign true
+git config tag.gpgsign true
+```
+
+If the user has no signing key and doesn't know how to create one, point them to GitHub's signing key documentation and stop: "Set up a signing key first, then run `/setup` again to enable commit signing."
+
+---
+
+### Phase 3 — Label population
 
 Run:
 
@@ -288,7 +343,7 @@ Wait for response.
 
 After this step (or if labels were non-zero initially), run `gh label list --limit 100 --json name,color,description` again.
 
-If `TICKET_LABELS` is unset or fewer than 5 labels exist, add a note: "`/start` works best with a clear issue-label pool (`TICKET_LABELS`), and `/qa` needs explicit QA lifecycle labels (`ready-for-qa`, `qa-passed`, `qa-failed`). Consider a lightweight priority scheme (e.g. `priority:high`, `priority:medium`, `priority:low`) if the team needs triage support. If the team runs planned iterations, set `DEFAULT_MILESTONE` in Phase 3; otherwise leave it unset so `/start` auto-detects."
+If `TICKET_LABELS` is unset or fewer than 5 labels exist, add a note: "`/start` works best with a clear issue-label pool (`TICKET_LABELS`), and `/qa` needs explicit QA lifecycle labels (`ready-for-qa`, `qa-passed`, `qa-failed`). Consider a lightweight priority scheme (e.g. `priority:high`, `priority:medium`, `priority:low`) if the team needs triage support. If the team runs planned iterations, set `DEFAULT_MILESTONE` in Phase 4; otherwise leave it unset so `/start` auto-detects."
 
 Display the results as a numbered list:
 
@@ -306,7 +361,7 @@ Wait for the user's response.
 
 - **yes** → use all labels
 - **numbers** (e.g. `1,3,5`) → use only those labels
-- **no / skip / anything else** → skip this phase, continue to Phase 3
+- **no / skip / anything else** → skip this phase, continue to Phase 4
 
 Show the exact change before writing:
 
@@ -322,7 +377,7 @@ Wait for confirmation. Write only on yes.
 
 ---
 
-### Phase 3 — Optional config walkthrough (profile-aware)
+### Phase 4 — Optional config walkthrough (profile-aware)
 
 First, infer the current profile using the same rules as Phase 1.
 
@@ -344,7 +399,7 @@ The walkthrough adapts based on profile. Walk through each applicable unset valu
 
 ---
 
-### Phase 4 — Team sharing
+### Phase 5 — Team sharing
 
 After completing or skipping the config walkthrough, say:
 
@@ -367,5 +422,5 @@ Add a note: `/start` can be used to create well-formed GitHub issues without wri
 - Do not create `.codecannon.yaml` without explicit user permission.
 - Do not report a configuration problem unless confident the condition is genuinely broken. Prefer false negatives over false positives on all diagnostic checks.
 - Never fetch more than 100 labels in a single command. `gh label list --limit 100` is the ceiling.
-- Do not skip any human gate in Phase 2 or Phase 3 — each write requires confirmation.
+- Do not skip any human gate in Phase 3 or Phase 4 — each write requires confirmation.
 - If the user skips a config value, do not ask again. Move on.
