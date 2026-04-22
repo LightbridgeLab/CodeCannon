@@ -126,7 +126,9 @@ Code Cannon skills are agent-agnostic, but each agent has its own quirks. This s
       "Bash(mktemp *)"
     ],
     "deny": [
+      "Bash(git push --force)",
       "Bash(git push --force *)",
+      "Bash(git reset --hard)",
       "Bash(git reset --hard *)",
       "Bash(rm -rf *)",
       "Bash(sudo *)"
