@@ -23,6 +23,8 @@ Otherwise → go to **Case A: New work**.
 
 > Skip this entirely if `$ARGUMENTS` triggered Case B.
 
+> **Execution order:** Resolve labels and milestones **now**, before entering Case A Step 1. If milestone auto-detection requires a user prompt (2+ open milestones), that prompt happens here — not later during issue creation. By the time you reach Step 2's human gate, all metadata must already be resolved so that Step 3 can proceed without re-prompting.
+
 The argument string may contain optional inline flags after the description. Parse as follows:
 
 1. **Identify flags** — scan for the first token that starts with `--label`, `-l`, `--milestone`, or `-m`. Everything before it is the **description**. Everything from the first flag onward is **flags**.
@@ -190,9 +192,9 @@ gh issue create \
 
 > **IMPORTANT — never pass body content inline in the `gh` command.** Do not use `--body`, `--body-file -`, heredocs (`<<EOF` or `<<'EOF'`), or `$(cat ...)`. All of these embed markdown in a Bash command, which triggers permission prompts that cannot be permanently allowed (the shell parser flags `#` headings, quoted delimiters, and substitutions). The two-step pattern above — file-writing tool then `--body-file <path>` — is the only approach that works without prompts across Claude Code, Gemini CLI, Cursor, and Codex.
 
-Resolve labels and milestone using the resolution steps in the Parsing section above:
-- **Labels**: use the value from three-tier label resolution. If non-empty, add `--label "<value>"` to the command. If empty (no flag, empty pool, creation not allowed), omit `--label` entirely.
-- **Milestone**: use the value from three-tier milestone resolution. If non-empty, add `--milestone "<value>"` to the command. If empty (no flag, no config default, no open milestones), omit `--milestone` entirely.
+Use the labels and milestone you already resolved in the Parsing section (before Step 1). Do **not** re-run label or milestone resolution here — the values are final:
+- **Labels**: if non-empty, add `--label "<value>"` to the command. If empty, omit `--label` entirely.
+- **Milestone**: if non-empty, add `--milestone "<value>"` to the command. If empty, omit `--milestone` entirely.
 
 **Body structure (required sections, in this order):**
 
