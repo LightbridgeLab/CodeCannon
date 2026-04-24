@@ -152,7 +152,7 @@ Read the relevant code. Propose a concrete implementation approach. Be specific 
 
 Say exactly:
 
-> **"Does this approach sound right? Type `go` to create a GitHub issue and branch, or share any questions/adjustments first."**
+> **"Does this approach sound right? Type `go` to create a GitHub issue and branch, or share any questions/adjustments first. To delegate part of the work to another agent, run `/delegate <task description>` before typing `go`."**
 
 Stop. Wait for the user to respond.
 
@@ -307,7 +307,7 @@ Tell the user:
 - What was previously done (from agent notes if present)
 - What appears to remain
 
-Ask: **"Does this match your understanding? Type `go` to start coding, or share any questions/adjustments first."**
+Ask: **"Does this match your understanding? Type `go` to start coding, or share any questions/adjustments first. To delegate part of the work to another agent, run `/delegate <task description>` before typing `go`."**
 
 Proceed only on unconditional approval. If the user's response includes conditions, questions, or adjustments, treat it as discussion — address their input and re-ask. If the user wants a fresh start, restart as Case A. If the user abandons, stop — nothing to clean up.
 
