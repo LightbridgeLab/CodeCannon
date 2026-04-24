@@ -309,11 +309,7 @@ Then post it (do NOT use `--body` or heredocs):
 gh issue comment <number> --body-file <tmpdir>/resolution_comment.md
 ```
 
-**Resolution writing rules:**
-- Write for PMs and BAs, not developers. Describe the *outcome*, not the implementation.
-- Reference the original problem from the issue body so the resolution reads as a direct answer to it.
-- Keep it to 1-3 sentences. If one sentence covers it, don't pad.
-- Use the unqualified `#N` form for the PR reference.
+Use the unqualified `#N` form for the PR reference (not `owner/repo#N`).
 
 Report success based on mode:
 {{#if !BRANCH_DEV}}
