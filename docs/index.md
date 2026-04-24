@@ -110,28 +110,29 @@ Code Cannon skills are agent-agnostic, but each agent has its own quirks. This s
 
 ### Claude Code
 
-**Reduce approval prompts.** Claude Code prompts for permission on shell commands that contain command substitutions (`$(...)`) or certain patterns. Pre-approve the commands Code Cannon uses by adding a `permissions` block to `.claude/settings.json` (project-level, committed) or `.claude/settings.local.json` (personal, git-ignored):
+**Reduce approval prompts.** Claude Code prompts for permission on unfamiliar shell commands. Pre-approve the commands Code Cannon uses by adding a `permissions` block to `.claude/settings.json` (project-level, committed) or `.claude/settings.local.json` (personal, git-ignored):
 
 ```json
 {
   "permissions": {
     "defaultMode": "acceptEdits",
     "allow": [
-      "Bash(git *)",
-      "Bash(gh *)",
-      "Bash(make *)",
-      "Bash(python3 *)",
-      "Bash(./sync.py *)",
-      "Bash(mkdir *)",
-      "Bash(mktemp *)"
+      "Bash(cd:*)",
+      "Bash(git:*)",
+      "Bash(gh:*)",
+      "Bash(make:*)",
+      "Bash(python3:*)",
+      "Bash(./sync.py:*)",
+      "Bash(mkdir:*)",
+      "Bash(mktemp:*)"
     ],
     "deny": [
       "Bash(git push --force)",
-      "Bash(git push --force *)",
+      "Bash(git push --force:*)",
       "Bash(git reset --hard)",
-      "Bash(git reset --hard *)",
-      "Bash(rm -rf *)",
-      "Bash(sudo *)"
+      "Bash(git reset --hard:*)",
+      "Bash(rm -rf:*)",
+      "Bash(sudo:*)"
     ]
   }
 }

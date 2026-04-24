@@ -35,16 +35,16 @@ If the current branch matches any of the above, **abort immediately** and say:
 
 ## Step 2 — Type-check gate
 
-First, move to the repository root so the command resolves against the correct Makefile / project config:
+First, find the repository root:
 
 ```
-cd "$(git rev-parse --show-toplevel)"
+git rev-parse --show-toplevel
 ```
 
-Then verify the make target exists before running it. Extract the target name from `{{CHECK_CMD}}` (e.g. `make check` → `check`) and run:
+Then `cd` to the returned path and verify the make target exists. Extract the target name from `{{CHECK_CMD}}` (e.g. `make check` → `check`) and run:
 
 ```
-make -n <target> 2>/dev/null
+cd <repo-root> && make -n <target> 2>/dev/null
 ```
 
 If `make -n` exits non-zero, **stop** and say:
@@ -207,10 +207,10 @@ Wait for the review to complete and report its verdict.
 
 ## Step 8 — Act on verdict
 
-Before merging, verify the merge target exists. Move to the repo root, extract the target name from `{{MERGE_CMD}}` (e.g. `make merge` → `merge`), and run:
+Before merging, verify the merge target exists. Find the repo root with `git rev-parse --show-toplevel`, then extract the target name from `{{MERGE_CMD}}` (e.g. `make merge` → `merge`) and run:
 
 ```
-cd "$(git rev-parse --show-toplevel)" && make -n <target> 2>/dev/null
+cd <repo-root> && make -n <target> 2>/dev/null
 ```
 
 If `make -n` exits non-zero, **stop** and say:
