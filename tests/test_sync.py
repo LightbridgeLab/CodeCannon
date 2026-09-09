@@ -321,6 +321,24 @@ class TestApplyConditionals(unittest.TestCase):
         self.assertNotIn("{{#if", result)
         self.assertNotIn("{{/if}}", result)
 
+    def test_leading_underscore_key_is_a_directive(self):
+        """A key _IF_OPEN doesn't match fails to open a block, stranding its
+        {{/if}} and stopping conditional processing for the whole file. #221."""
+        text = "before\n{{#if _INTERNAL}}\nkept\n{{/if}}\nafter"
+        result = sync.apply_conditionals(text, {"_INTERNAL": "yes"})
+        self.assertIn("kept", result)
+        self.assertNotIn("{{#if", result)
+        self.assertNotIn("{{/if}}", result)
+
+    def test_unmatched_close_warns(self):
+        """Stopping on a stray {{/if}} leaves every later conditional in the
+        file unprocessed — that must not happen silently at exit 0. #221."""
+        text = "{{/if}}\n{{#if FOO}}\nbody\n{{/if}}"
+        buf = io.StringIO()
+        with contextlib.redirect_stdout(buf):
+            sync.apply_conditionals(text, {"FOO": "yes"})
+        self.assertIn("no matching {{#if}}", buf.getvalue())
+
     def test_digit_bearing_key_is_a_directive(self):
         """_IF_OPEN's charset must stay in step with find_unresolved: a key one
         matches and the other doesn't is neither expanded nor reported, so the
@@ -524,6 +542,11 @@ class TestFindUnresolved(unittest.TestCase):
         """Keys like PROMPT_PATH2 must be seen, or an unresolved override
         placeholder slips through as a literal output directory. #221."""
         self.assertEqual(sync.find_unresolved("{{PROMPT_PATH2}}"), ["PROMPT_PATH2"])
+
+    def test_finds_key_with_leading_underscore(self):
+        """The original charset accepted a leading underscore; the digit
+        widening must not have narrowed it. #221."""
+        self.assertEqual(sync.find_unresolved("{{_INTERNAL}}"), ["_INTERNAL"])
 
     def test_ignores_all_digit_token(self):
         """A documented regex backreference or Handlebars snippet like {{1}} is

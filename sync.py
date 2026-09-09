@@ -261,10 +261,12 @@ def parse_frontmatter(text):
 # The directive lines are always removed from the output.
 # Nesting is supported (inner blocks are evaluated innermost-first).
 
-# Key charset must stay in step with find_unresolved: a key one matches and the
-# other doesn't is neither expanded as a directive nor reported as unresolved,
-# so the literal line ships into generated output.
-_IF_OPEN = re.compile(r'^\s*\{\{#if\s+(!?)([A-Z][A-Z0-9_]*)\}\}\s*$')
+# Key charset matches find_unresolved's, but that is for consistency only — it
+# is not a safety net: find_unresolved's pattern cannot match a `{{#if X}}` line
+# (the `#` and the space), so a key this misses is not reported as unresolved
+# either. It silently fails to open a block, which strands the matching
+# `{{/if}}` and stops conditional processing for the whole file.
+_IF_OPEN = re.compile(r'^\s*\{\{#if\s+(!?)([A-Z_][A-Z0-9_]*)\}\}\s*$')
 _IF_CLOSE = re.compile(r'^\s*\{\{/if\}\}\s*$')
 
 
@@ -288,7 +290,13 @@ def apply_conditionals(text, values):
                 open_idx = i
                 break
         if open_idx is None:
-            break  # malformed — stop processing
+            # Malformed: this {{/if}} has no matching open. Stopping here leaves
+            # every remaining conditional in the file unprocessed, so literal
+            # directive lines and blocks that should have been stripped ship
+            # into the output — say so rather than failing silently at exit 0.
+            print("  Warning: {{/if}} with no matching {{#if}} — conditional "
+                  "blocks in this skill were left unprocessed")
+            break
 
         m = _IF_OPEN.match(lines[open_idx])
         negated = m.group(1) == '!'
@@ -323,13 +331,13 @@ def apply_placeholders(text, values):
 def find_unresolved(text):
     """Return list of placeholder names that were not substituted.
 
-    Keys may contain digits but must start with a letter: the output-path check
+    Keys may contain digits but may not start with one: the output-path check
     treats an unresolved override as an error, so a key this misses (e.g.
-    `{{PROMPT_PATH2}}`) would slip through as a literal output directory. The
-    leading-letter requirement keeps all-digit tokens (`{{1}}` in a documented
+    `{{PROMPT_PATH2}}`) would slip through as a literal output directory, while
+    excluding a leading digit keeps all-digit tokens (`{{1}}` in a documented
     regex backreference or Handlebars snippet) from reading as placeholders.
     """
-    return re.findall(r'\{\{([A-Z][A-Z0-9_]*)\}\}', text)
+    return re.findall(r'\{\{([A-Z_][A-Z0-9_]*)\}\}', text)
 
 
 # ── Hash and change detection ─────────────────────────────────────────────────
